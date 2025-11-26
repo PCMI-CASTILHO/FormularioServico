@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Formulário Serviço">
+    <title>Formulário de Serviço</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="manifest" href="./manifest.json">
+	<meta name="theme-color" content="#1f2937">
+	<!-- jsPDF e AutoTable -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+	
+	<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+
+	<script>
+	if ("serviceWorker" in navigator) {
+		navigator.serviceWorker.register("./sw.js");
+	}
+	</script>
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #1e40af;
+            --accent: #f59e0b;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        .signature-canvas {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background-color: white;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        
+        .photo-preview {
+            border-radius: 8px;
+            object-fit: cover;
+            height: 120px;
+            width: 120px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+        
+        .form-section {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section h2 {
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background-color: #10b981;
+        }
+        
+        .status-offline {
+            background-color: #ef4444;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification.success {
+            background-color: #10b981;
+        }
+        
+        .notification.error {
+            background-color: #ef4444;
+        }
+        
+        .notification.info {
+            background-color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="bg-blue-600 text-white p-2 rounded-lg mr-3">
+                    <i class="fas fa-tools text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold text-gray-800">Formulário de Serviço</h1>
+            </div>
+<div class="flex items-center space-x-4">
+    <div id="status" class="flex items-center text-sm">
+        <span id="status-indicator" class="status-indicator status-offline"></span>
+        <span id="status-text">Offline</span>
+    </div>
+    <!-- Botão de Sincronização - NOVO -->
+    <button id="sync-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center relative">
+        <i class="fas fa-sync-alt mr-2"></i> Sincronizar
+        <span id="sync-badge" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center hidden">0</span>
+    </button>
+    <button id="export-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center">
+        <i class="fas fa-download mr-2"></i> Salvar
+    </button>
+</div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6">
+        <section class="form-section">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-clipboard-list text-blue-600 mr-2"></i> Dados do Serviço
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="cliente" class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                        <input type="text" id="cliente" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="cidade" class="block text-sm font-medium text-gray-700 mb-1">Cidade - UF *</label>
+                        <input type="text" id="cidade" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="equipamento" class="block text-sm font-medium text-gray-700 mb-1">Equipamento *</label>
+                        <select id="equipamento" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Selecione o equipamento</option>
+                            <option value="SELAVES WI-FI">SELAVES WI-FI</option>
+                            <option value="SELAVES">SELAVES</option>
+                            <option value="PS/SEL - WIFI">PS/SEL - WIFI</option>
+                            <option value="BD15-SD/PS">BD15-SD/PS</option>
+                            <option value="BD15-SD/SEL">BD15-SD/SEL</option>
+                            <option value="BD15-BT">BD15-BT</option>
+                            <option value="BCD-15">BCD-15</option>
+                            <option value="SP-501">SP-501</option>
+                            <option value="SP-300">SP-300</option>
+                            <option value="SP-SEQ">SP-SEQ</option>
+                            <option value="CS-P">CS-P</option>
+                            <option value="CS-R">CS-R</option>
+                            <option value="OUTRO">OUTRO</option>
+                        </select>
+                        <input type="text" id="equipamento-outro" placeholder="Especifique o equipamento" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
+                    </div>
+                    
+                    <div>
+                        <label for="tecnico" class="block text-sm font-medium text-gray-700 mb-1">Técnico *</label>
+                        <input type="text" id="tecnico" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="servico" class="block text-sm font-medium text-gray-700 mb-1">Serviço Prestado *</label>
+                        <select id="servico" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Selecione o tipo de serviço</option>
+                            <option value="INSTALAÇÃO">INSTALAÇÃO</option>
+                            <option value="STARTUP">STARTUP</option>
+                            <option value="MANUTENÇÃO">MANUTENÇÃO</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="data-inicial" class="block text-sm font-medium text-gray-700 mb-1">Data Inicial *</label>
+                            <input type="date" id="data-inicial" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="hora-inicial" class="block text-sm font-medium text-gray-700 mb-1">Hora Inicial *</label>
+                            <input type="time" id="hora-inicial" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="data-final" class="block text-sm font-medium text-gray-700 mb-1">Data Final *</label>
+                            <input type="date" id="data-final" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="hora-final" class="block text-sm font-medium text-gray-700 mb-1">Hora Final *</label>
+                            <input type="time" id="hora-final" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="veiculo" class="block text-sm font-medium text-gray-700 mb-1">Veículo</label>
+                        <input type="text" id="veiculo" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="estoque" class="block text-sm font-medium text-gray-700 mb-1">Estoque</label>
+                        <select id="estoque" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Selecione o estoque</option>
+                            <option value="ESTOQUE SELAVES 16">ESTOQUE SELAVES 16</option>
+                            <option value="ESTOQUE SELAVES 22">ESTOQUE SELAVES 22</option>
+                            <option value="ESTOQUE SELAVES 29">ESTOQUE SELAVES 29</option>
+                            <option value="ESTOQUE SELAVES 44">ESTOQUE SELAVES 44</option>
+                            <option value="ESTOQUE SELAVES 53">ESTOQUE SELAVES 53</option>
+                            <option value="ESTOQUE SELAVES 54">ESTOQUE SELAVES 54</option>
+                            <option value="ESTOQUE SP-501 48">ESTOQUE SP-501 48</option>
+                            <option value="ESTOQUE SP-501 NOVO 01">ESTOQUE SP-501 NOVO 01</option>
+                            <option value="ESTOQUE SP-501 NOVO 02">ESTOQUE SP-501 NOVO 02</option>
+                            <option value="ESTOQUE SEQ GIRADI">ESTOQUE SEQ GIRADI</option>
+                            <option value="ESTOQUE SEQ MATHEUS">ESTOQUE SEQ MATHEUS</option>
+                            <option value="ESTOQUE SEQ LEONARDO">ESTOQUE SEQ LEONARDO</option>
+                            <option value="ESTOQUE SEQ CAROBA">ESTOQUE SEQ CAROBA</option>
+                            <option value="ESTOQUE SEQ LUIZ V.">ESTOQUE SEQ LUIZ V.</option>
+                            <option value="ESTOQUE SEQ ARILDO">ESTOQUE SEQ ARILDO</option>
+                            <option value="CS 55">CS 55</option>
+                            <option value="CS 56">CS 56</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="numero-serie" class="block text-sm font-medium text-gray-700 mb-1">Nº de Série</label>
+                        <input type="text" id="numero-serie" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="####/ano">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-file-alt text-blue-600 mr-2"></i> Relatório da Máquina
+            </h2>
+            
+            <div>
+                <label for="relatorio-maquina" class="block text-sm font-medium text-gray-700 mb-1">Defeitos Encontrados e Solução *</label>
+                <textarea id="relatorio-maquina" rows="5" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Descreva os defeitos encontrados e as soluções aplicadas..."></textarea>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-camera text-blue-600 mr-2"></i> Fotos da Máquina
+            </h2>
+            
+            <div class="mb-4">
+                <input type="file" id="fotos-input" accept="image/*" multiple class="hidden">
+                <button id="add-fotos-btn" class="btn-secondary px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Adicionar Fotos
+                </button>
+                <p class="text-sm text-gray-500 mt-1">Máximo de 10 fotos</p>
+            </div>
+            
+            <div id="fotos-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            </div>
+        </section>
+
+        <section class="form-section">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-signature text-blue-600 mr-2"></i> Assinaturas
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">Assinatura do Cliente *</h3>
+                    <div class="mb-2">
+                        <label for="cliente-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                        <input type="text" id="cliente-nome" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="mb-2">
+                        <label for="cliente-email" class="block text-sm font-medium text-gray-700 mb-1">E-mail *</label>
+                        <input type="email" id="cliente-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <canvas id="assinatura-cliente" class="signature-canvas w-full h-40"></canvas>
+                    <button id="limpar-cliente" class="mt-2 text-sm text-red-500 hover:text-red-700 transition duration-150">
+                        <i class="fas fa-eraser mr-1"></i> Limpar Assinatura
+                    </button>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">Assinatura do Técnico *</h3>
+                    <div class="mb-2">
+                        <label for="tecnico-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                        <input type="text" id="tecnico-nome" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <canvas id="assinatura-tecnico" class="signature-canvas w-full h-40"></canvas>
+                    <button id="limpar-tecnico" class="mt-2 text-sm text-red-500 hover:text-red-700 transition duration-150">
+                        <i class="fas fa-eraser mr-1"></i> Limpar Assinatura
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-boxes text-blue-600 mr-2"></i> Materiais Utilizados
+            </h2>
+            
+            <div class="mb-4">
+                <div class="flex space-x-2">
+                    <input type="text" id="material-input" list="materiais-list" placeholder="Digite código ou nome do material" class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <datalist id="materiais-list"></datalist>
+                    <input type="number" id="material-qtd" min="1" placeholder="Qtd" class="w-24 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <button id="add-material-btn" class="btn-primary px-4 py-2 rounded-lg">
+                        <i class="fas fa-plus mr-1"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="materiais-lista" class="space-y-2">
+            </div>
+        </section>
+    </main>
+
+    <div id="image-modal" class="modal">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="modal-image">
+    </div>
+
+    <div id="notification" class="notification hidden">
+        <div class="flex items-center">
+            <i id="notification-icon" class="mr-2"></i>
+            <span id="notification-text"></span>
+        </div>
+    </div>
+
+    <script>
+        // Dados do estoque
+const estoqueData = [
+    { codigo: '9318', material: 'ABRAÇADEIRA NYLON 100MMX2,5MM' },
+    { codigo: '3296', material: 'ABRAÇADEIRA NYLON 4,6MMX200MM' },
+    { codigo: '12525', material: 'ABRAÇADEIRA DAS GAVETAS SEQ' },
+    { codigo: '11292', material: 'ABRAÇADEIRAA COLETA SOLO' },
+    { codigo: '9763', material: 'ARRUELA LISA 1/2 GVZ' },
+    { codigo: '9320', material: 'ARRUELA LISA 1/4 INOX' },
+    { codigo: '9472', material: 'ARRUELA LISA M4 INOX' },
+    { codigo: '9619', material: 'BARRA DE PINOS 1X40 VIAS 11,2MM 180ş' },
+    { codigo: '9617', material: 'BARRA DE PINOS 1X40 VIAS 14,5MM 90ş' },
+    { codigo: '9970', material: 'BARRA DE PINOS 1X40 VIAS 17MM 90ş' },
+    { codigo: '9607', material: 'BARRA ROSCADA M4 INOX' },
+    { codigo: '7207', material: 'BATERIA 12VCC 7A' },
+    { codigo: '3592', material: 'BATERIA 12VCC 1,3A' },
+    { codigo: '10822', material: 'BATERIA 5VCC' },
+    { codigo: '9447', material: 'BOBINA 220V' },
+    { codigo: '9605', material: 'BLOCO DE CONTATO NO' },
+    { codigo: '9425', material: 'BLOCO DE CONTATO NF' },
+    { codigo: '10536', material: 'BORRACHA DE VEDAÇÃO' },
+    { codigo: '11272', material: 'BORNE SACK FUSIVEL' },
+    { codigo: '9423', material: 'BORNE SACK BEGE' },
+    { codigo: '12485', material: 'BORNE SACK AZUL' },
+    { codigo: '9399', material: 'BOTÃO DE PULSO' },
+    { codigo: '9415', material: 'BOTÃO DE EMERGÊNCIA' },
+    { codigo: '2454', material: 'BUCHA M8' },
+    { codigo: '9964', material: 'BUCHA METALICA MACHO 1/4' },
+    { codigo: '11597', material: 'BUCHA METALICA MACHO 1/8' },
+    { codigo: '4002', material: 'CABO DE ALIMENTAÇÃO 2,5MM TRIPOLAR' },
+    { codigo: '9478', material: 'CABO AWG 4X' },
+    { codigo: '10570', material: 'CABO DE AÇO 1/8 GALV 3.2' },
+    { codigo: '10051', material: 'CABO FLAT COLORIDO 20 VIAS' },
+    { codigo: '9871', material: 'CABO DE COMANDO 1X0,5MM AZUL' },
+    { codigo: '10541', material: 'CABO FLEX 1,5MM VERDE' },
+    { codigo: '9875', material: 'CABO VERMELHO 1X0,5MM' },
+    { codigo: '9873', material: 'CABO PRETO 1X0,5MM' },
+    { codigo: '10551', material: 'CABO PP 3X0,5MM' },
+    { codigo: '2642', material: 'CABO PP 2X1MM' },
+    { codigo: '10550', material: 'CABO PP 2X0,5MM' },
+    { codigo: '6662', material: 'CABO USB CONTROLADOR' },
+    { codigo: '9849', material: 'CABO DE REDE' },
+    { codigo: '10654', material: 'CASE DO RASPBERRY' },
+    { codigo: '8257', material: 'CAIXA DE INTERLIGAÇÃO SENSORES MAX E MIN' },
+    { codigo: '8249', material: 'CAIXA DE INTERLIGAÇÃO DAS CÉLULAS' },
+    { codigo: '9467', material: 'CAIXA OPACA 190X140X70' },
+    { codigo: '9400', material: 'CAIXA BX01 - 1 FURO 76X70X60' },
+    { codigo: '9401', material: 'CAIXA BX02 - 2 FURO' },
+    { codigo: '11602', material: 'KIT CAMERA MAIX BIT' },
+    { codigo: '9962', material: 'CAPACITOR POLIESTER 100K 63V' },
+    { codigo: '9271', material: 'CAPACITOR 47NF 400V' },
+    { codigo: '1106', material: 'CARREGADOR 12VCC 0,8A' },
+    { codigo: '12010', material: 'FONTE DE PAREDE 5 VCC 1A' },
+    { codigo: '9212', material: 'FONTE 12VCC 2A DE PAREDE' },
+    { codigo: '9444', material: 'FONTE NOBREAK FULL' },
+    { codigo: '9844', material: 'CARTÃO SD' },
+    { codigo: '12658', material: 'CÉLULA 20 KG' },
+    { codigo: '8750', material: 'CÉLULA DE CARGA BSPH10 100KG' },
+    { codigo: '9476', material: 'CÉLULA DE CARGA Z 500KG' },
+    { codigo: '9693', material: 'CÉLULA DE CARGA Z 100KG' },
+    { codigo: '9330', material: 'CÉLULA DE CARGA Z 50KG' },
+    { codigo: '6743', material: 'CHAPA DE PROTEÇÃO DO CARTÃO' },
+    { codigo: '9885', material: 'CHAPINHA DE Nº DE SÉRIE' },
+    { codigo: '9876', material: 'CHAVE ALAVANCA LD' },
+    { codigo: '9397', material: 'CHAVE LDL' },
+    { codigo: '10569', material: 'CLIP PARA CABO DE AÇO 1/8 - 3,2' },
+    { codigo: '5670', material: 'CONTATOR 12 A 220VAC' },
+    { codigo: '9402', material: 'CHAVE SELETORA XB2 2 POSIÇÕES' },
+    { codigo: '9636', material: 'CONECTOR MIKE FEMEA 4 PINOS' },
+    { codigo: '9281', material: 'CONECTOR MIKE MACHO 4 PINOS' },
+    { codigo: '8837', material: 'CONEXAO RETA 1/4XM4' },
+    { codigo: '8826', material: 'CONEXAO RETA 1/4XM6' },
+    { codigo: '3882', material: 'CONEXÃO RETA 1/8XM4' },
+    { codigo: '10012', material: 'CONEXÃO RETA LATÃO' },
+    { codigo: '8836', material: 'CONEXAO UNIÃO RETA 8MM' },
+    { codigo: '8812', material: 'CONJUNTO LUBRIFIL MINI 1/4' },
+    { codigo: '10580', material: 'FONTE HI-LINK 12V' },
+    { codigo: '11812', material: 'FONTE HI-LINK 5V' },
+    { codigo: '10828', material: 'CONECTOR MICRO USB PS/SEL WIFI' },
+    { codigo: '9633', material: 'CORDA NATURAL BRANCA 4MM' },
+    { codigo: '10655', material: 'COOLER PARA RASPBERRY' },
+    { codigo: '9609', material: 'CORRENTE DE AÇO' },
+    { codigo: '9690', material: 'DIODO 1N4007' },
+    { codigo: '9845', material: 'ENGATE RAPIDO 1/4 MACHO' },
+    { codigo: '9842', material: 'ENGATE RAPIDO 1/4 FEMÊA' },
+    { codigo: '9260', material: 'ESPAÇADOR NYLON GRANDE 7X3X10' },
+    { codigo: '9263', material: 'ESPAÇADOR NYLON GRANDE 7X3X10' },
+    { codigo: '9373', material: 'ESPAÇADOR C/ ROSCA' },
+    { codigo: '9334', material: 'FUSIVEL 1A PEQUENO' },
+    { codigo: '9826', material: 'FUSIVEL 0,5A PEQUENO' },
+    { codigo: '9867', material: 'GERENCIADOR DO RASP PAINEL IHM' },
+    { codigo: '9258', material: 'ISOLADOR CHAPEU' },
+    { codigo: '12269', material: 'INDICADOR SELAVES WI-FI' },
+    { codigo: '3090', material: 'INDICADOR SP-501' },
+    { codigo: '12893', material: 'HUB' },
+    { codigo: '9694', material: 'KIT BOTÃO REGISTRA' },
+    { codigo: '8330', material: 'KIT DISTORCEDOR' },
+    { codigo: '5209', material: 'KIT ISOLADOR SISTEMA FIXO' },
+    { codigo: '10573', material: 'KIT ISOLADOR SISTEMA MOVEL' },
+    { codigo: '9396', material: 'MASCARA SP-300' },
+    { codigo: '11052', material: 'MASCARA DO TOUCH PAINEL IHM' },
+    { codigo: '9638', material: 'MICRO SD' },
+    { codigo: '9554', material: 'LED VERMELHO DIFUSO' },
+    { codigo: '13728', material: 'LED BICOLOR' },
+    { codigo: '9857', material: 'LUVA 1/4 METALICA SEXTAVADA' },
+    { codigo: '9856', material: 'MANGUEIRA PU6' },
+    { codigo: '9961', material: 'MANGUEIRA PU8' },
+    { codigo: '9379', material: 'MÓDULO RELÓGIO RASPBERRY' },
+    { codigo: '9542', material: 'MÓDULO RELÓGIO DO INDICADOR TRADICIONAL' },
+    { codigo: '4719', material: 'MÓDULO AD' },
+    { codigo: '9547', material: 'MÓDULO DE LEITOR SD' },
+    { codigo: '10825', material: 'MÓDULO DE LEITOR MICRO SD' },
+    { codigo: '9546', material: 'MÓDULO RELÉ 16 CANAIS' },
+    { codigo: '9481', material: 'MÓDULO RELÉ 4 CANAIS 12VCC' },
+    { codigo: '9387', material: 'MÓDULO DISPLAY LCD 2 LINHAS' },
+    { codigo: '10656', material: 'MONITOR TOUCH SCREEN' },
+    { codigo: '6560', material: 'MOSQUETÃO' },
+    { codigo: '9948', material: 'ÓLEO DE COMPRESSOR' },
+    { codigo: '3154', material: 'ÓLEO PNEUMATICO' },
+    { codigo: '9338', material: 'PARAFUSO PHILIPS 2,5X20' },
+    { codigo: '9342', material: 'PARAFUSO PHILIPS M4X12' },
+    { codigo: '9847', material: 'PARAFUSO OLIAL 6MM' },
+    { codigo: '9338', material: 'PARAFUSO PHILIPS 2,5X20MM INOX' },
+    { codigo: '9339', material: 'PARAFUSO PHILIPS CONICO 2,5X20MM INOX' },
+    { codigo: '10763', material: 'PF PHILIPS 3,5X9,5' },
+    { codigo: '10579', material: 'PARAFUSO PHILIPS M3X25MM INOX' },
+    { codigo: '9342', material: 'PARAFUSO PHILIPS M4X12MM INOX' },
+    { codigo: '9767', material: 'PARAFUSO SEXTAVADO M10X60 INOX' },
+    { codigo: '9768', material: 'PARAFUSO SEXTAVADO M6X16MM INOX' },
+    { codigo: '2767', material: 'PARAFUSO SEXTAVADO M8X55MM INOX' },
+    { codigo: '9483', material: 'PARAFUSO ALLEN ABAULADO M4X12MM' },
+    { codigo: '9769', material: 'PARAFUSO ALLEN CILINDRICO M4X20MM' },
+    { codigo: '9350', material: 'PARAFUSO ALLEN CILINDRICO M6X10MM' },
+    { codigo: '10549', material: 'PARAFUSO ALLEN CONICO M4X35MM' },
+    { codigo: '9734', material: 'PARAFUSO ALLEN CONICO M6X16MM' },
+    { codigo: '10117', material: 'PARAFUSO BROCANTE 5,5X25MM' },
+    { codigo: '10571', material: 'PARAFUSO SOBERBO SEXTAVADO 1/4X50MM' },
+    { codigo: '10572', material: 'PARAFUSO SEXTAVADO 1/4X3/4' },
+    { codigo: '9266', material: 'PARAFUSO NYLON FENDA' },
+    { codigo: '11852', material: 'PRESILHA COLETA SOLO' },
+    { codigo: '8816', material: 'PISTÃO 25X250MM' },
+    { codigo: '9965', material: 'PISTÃO MINI 16X60MM' },
+    { codigo: '9442', material: 'PISTÃO 25X125MM' },
+    { codigo: '1693', material: 'PISTÃO 25X150MM' },
+    { codigo: '6158', material: 'PILHA DO CLOCK' },
+    { codigo: '10041', material: 'PLACA LED MONTADA DO SEQ' },
+    { codigo: '3415', material: 'PLC DE CORTE SP-501' },
+    { codigo: '2818', material: 'PLC DE CORTE SP-300' },
+    { codigo: '9389', material: 'PLC CONTROLADOR MEGA' },
+    { codigo: '9458', material: 'PLC CONTROLADOR UNO' },
+    { codigo: '10790', material: 'CONTROLADOR ESP-32 PS/SEL WIFI' },
+    { codigo: '9882', material: 'PLC SEL-BOX 2.0' },
+    { codigo: '10790', material: 'CONTROLADOR WI-FI' },
+    { codigo: '12340', material: 'PLACA RASPBERRY' },
+    { codigo: '13214', material: 'PALCA CS MONTADA' },
+    { codigo: '8125', material: 'INDICADOR TRADICIONAL' },
+    { codigo: '7351', material: 'INDICADOR IHM' },
+    { codigo: '8127', material: 'ESCRAVO' },
+    { codigo: '9550', material: 'PLATAFORMA INFERIOR CÉLULA' },
+    { codigo: '3437', material: 'PLATAFORMA SUPERIOR CÉLULA' },
+    { codigo: '8814', material: 'PONTEIRA ANGULAR' },
+    { codigo: '8809', material: 'PONTEIRA ROTULAR' },
+    { codigo: '9781', material: 'PORCA M6 INOX' },
+    { codigo: '9359', material: 'PORLOCK M10 INOX' },
+    { codigo: '9360', material: 'PORLOCK M3' },
+    { codigo: '9784', material: 'PORCA 1/4' },
+    { codigo: '9361', material: 'PORLOCK M4' },
+    { codigo: '9362', material: 'PORLOCK M6' },
+    { codigo: '3256', material: 'PORLOCK M8' },
+    { codigo: '9363', material: 'PORCA 2,5 INOX' },
+    { codigo: '9779', material: 'PORCA HASTE DOS PISTÕES 25X125/150/250' },
+    { codigo: '9748', material: 'PORCA HASTE DOS PISTÕES MINI 16X80' },
+    { codigo: '9264', material: 'PORCA NYLON' },
+    { codigo: '9274', material: 'PORTA FUSIVEL' },
+    { codigo: '9549', material: 'PG 11' },
+    { codigo: '9364', material: 'PG7' },
+    { codigo: '9532', material: 'REGULADOR 12V P/ 5V' },
+    { codigo: '9112', material: 'REGULADOR 7812' },
+    { codigo: '9900', material: 'RELÉ ACOPLADOR 12V' },
+    { codigo: '11978', material: 'BASE DO RELÉ ACOPLADOR SLIM' },
+    { codigo: '11981', material: 'RELÉ ACOPLADOR SLIM 220V' },
+    { codigo: '10653', material: 'RELÉ TÉRMICO 1,6 - 2,5 A' },
+    { codigo: '4595', material: 'RELÉ TERMICO 4,0 - 6,3A' },
+    { codigo: '8829', material: 'REGULADOR DE FLUXO 6X1/8' },
+    { codigo: '9934', material: 'RESISTOR 10K2 1% 1/4W' },
+    { codigo: '9930', material: 'RJ45' },
+    { codigo: '11181', material: 'ROTEADOR TP-LINK' },
+    { codigo: '12206', material: 'SENSOR CAPACITIVO CA30' },
+    { codigo: '9494', material: 'SENSOR BANANA' },
+    { codigo: '8833', material: 'SILENCIADOR BRONZE 1/8' },
+    { codigo: '13213', material: 'SLAT COLETA SOLO' },
+    { codigo: '11648', material: 'SINALEIRO LED VERDE - 110/220V' },
+    { codigo: '9273', material: 'SINDAL 10 MM' },
+    { codigo: '10050', material: 'SINDAL 16 MM' },
+    { codigo: '9557', material: 'SUPORTE DO LED 5MM' },
+    { codigo: '9978', material: 'TECLADO BT' },
+    { codigo: '9836', material: 'TECLADO BD15-SD/PS' },
+    { codigo: '9859', material: 'TECLADO BD15-SD/SEL' },
+    { codigo: '9398', material: 'TECLADO BD15-SEL' },
+    { codigo: '9405', material: 'TECLADO SP-501 GRANDE' },
+    { codigo: '9404', material: 'TECLADO SP-501 PEQUENO' },
+    { codigo: '8895', material: 'TECLADO PS/SEL WIFI' },
+    { codigo: '9956', material: 'TECLADO SEQUENCIAL' },
+    { codigo: '9393', material: 'TERMINAL FEMEA TOTAL' },
+    { codigo: '9368', material: 'TERMINAL OLHAL AZUL' },
+    { codigo: '9368', material: 'TERMINAL OLHAL PEQUENO VERMELHO' },
+    { codigo: '10575', material: 'TERMINAL GARFO PEQUENO VERMELHO' },
+    { codigo: '9911', material: 'TERMINAL GARFO AZUL' },
+    { codigo: '9391', material: 'TERMINAL TUBULAR 0,75MM BRANCO' },
+    { codigo: '9431', material: 'TERMINAL TUBULAR 1MM VERMELHO' },
+    { codigo: '9432', material: 'TERMINAL TUBULAR 1,5 MM PRETO' },
+    { codigo: '9870', material: 'TERMINAL TUBULAR 1MM DUPLO VERMELHO' },
+    { codigo: '9983', material: 'T PU8' },
+    { codigo: '9984', material: 'ABRAÇADEIRA T PU8' },
+    { codigo: '9509', material: 'T MULTIPLO PU6' },
+    { codigo: '10022', material: 'TOMADA FEMEA' },
+    { codigo: '8820', material: 'VALVULA ESFERA 1/4' },
+    { codigo: '8822', material: 'VALVULA SOLENÓIDE 220V' },
+    { codigo: '8818', material: 'VALVULA SOLENÓIDE 12V' },
+    { codigo: '7212', material: 'ACRILICO DA BOBINA DA VALVULA' },
+    { codigo: '9747', material: 'PORCA PROT. BOTÃO REGISTRA' }
+];
+
+        // Estado da aplicação
+        let state = {
+            fotos: [],
+            materiais: [],
+            assinaturas: {
+                cliente: null,
+                tecnico: null
+            }
+        };
+
+		// ======== CONFIGURAÇÕES DE SINCRONIZAÇÃO ========
+const SYNC_CONFIG = {
+    endpoint: 'https://vps.pesoexato.com/servico_set',
+    interval: 5000, // 5 segundos
+    maxRetention: 14 * 24 * 60 * 60 * 1000 // 24 horas em milissegundos
+};
+
+		// ======== FUNÇÃO PARA GERAR CHAVE ÚNICA ========
+function generateUniqueKey() {
+    const timestamp = Date.now().toString(36);
+    const randomStr = Math.random().toString(36).substr(2, 9);
+    return `form_${timestamp}_${randomStr}`;
+}
+
+async function registrarBackgroundSync() {
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.sync.register('background-sync-formularios');
+            console.log('✅ Background Sync registrado para sincronização em background');
+            return true;
+        } catch (error) {
+            console.log('⚠️ Background Sync não disponível:', error);
+            return false;
+        }
+    }
+    return false;
+}
+
+// ======== ESTADO DA SINCRONIZAÇÃO ========
+let syncState = {
+    pendingCount: 0,
+    isSyncing: false,
+    syncInterval: null
+};
+
+// ======== ELEMENTOS DA INTERFACE ========
+let syncBtn, syncBadge, syncIcon;
+
+        // Elementos DOM
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const exportBtn = document.getElementById('export-btn');
+        const fotosInput = document.getElementById('fotos-input');
+        const addFotosBtn = document.getElementById('add-fotos-btn');
+        const fotosPreview = document.getElementById('fotos-preview');
+        const materialInput = document.getElementById('material-input');
+        const materialQtd = document.getElementById('material-qtd');
+        const addMaterialBtn = document.getElementById('add-material-btn');
+        const materiaisLista = document.getElementById('materiais-lista');
+        const materiaisDatalist = document.getElementById('materiais-list');
+        const equipamentoSelect = document.getElementById('equipamento');
+        const equipamentoOutro = document.getElementById('equipamento-outro');
+        const notification = document.getElementById('notification');
+        const notificationIcon = document.getElementById('notification-icon');
+        const notificationText = document.getElementById('notification-text');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalClose = document.querySelector('.modal-close');
+
+        // Configuração dos canvas de assinatura
+        const canvasCliente = document.getElementById('assinatura-cliente');
+        const canvasTecnico = document.getElementById('assinatura-tecnico');
+        const ctxCliente = canvasCliente.getContext('2d');
+        const ctxTecnico = canvasTecnico.getContext('2d');
+        let isDrawingCliente = false;
+        let isDrawingTecnico = false;
+        let lastXCliente = 0;
+        let lastYCliente = 0;
+        let lastXTecnico = 0;
+        let lastYTecnico = 0;
+
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                statusIndicator.className = 'status-indicator status-online';
+                statusText.textContent = 'Online';
+            } else {
+                statusIndicator.className = 'status-indicator status-offline';
+                statusText.textContent = 'Offline';
+            }
+        }
+
+        function setupEventListeners() {
+            exportBtn.addEventListener('click', exportData);
+            addFotosBtn.addEventListener('click', () => fotosInput.click());
+            fotosInput.addEventListener('change', handleFileSelect);
+            addMaterialBtn.addEventListener('click', addMaterial);
+            materialInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addMaterial();
+            });
+
+            document.getElementById('limpar-cliente').addEventListener('click', () => clearCanvas('cliente'));
+            document.getElementById('limpar-tecnico').addEventListener('click', () => clearCanvas('tecnico'));
+
+            equipamentoSelect.addEventListener('change', function() {
+                equipamentoOutro.classList.toggle('hidden', this.value !== 'OUTRO');
+            });
+
+            modalClose.addEventListener('click', () => {
+                imageModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    imageModal.style.display = 'none';
+                }
+            });
+
+			if (document.getElementById('sync-btn')) {
+    document.getElementById('sync-btn').addEventListener('click', manualSync);
+}
+        }
+
+        function setupSignatureCanvas(canvas, ctx, tipo) {
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            function getTouchPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                return {
+                    x: touch.clientX - rect.left,
+                    y: touch.clientY - rect.top
+                };
+            }
+
+            function draw(x, y, isCliente) {
+                const config = isCliente ? 
+                    { ctx: ctxCliente, drawing: isDrawingCliente, lastX: lastXCliente, lastY: lastYCliente } :
+                    { ctx: ctxTecnico, drawing: isDrawingTecnico, lastX: lastXTecnico, lastY: lastYTecnico };
+
+                if (!config.drawing) return;
+
+                config.ctx.beginPath();
+                config.ctx.moveTo(config.lastX, config.lastY);
+                config.ctx.lineTo(x, y);
+                config.ctx.stroke();
+
+                if (isCliente) {
+                    lastXCliente = x;
+                    lastYCliente = y;
+                    state.assinaturas.cliente = canvas.toDataURL();
+                } else {
+                    lastXTecnico = x;
+                    lastYTecnico = y;
+                    state.assinaturas.tecnico = canvas.toDataURL();
+                }
+            }
+
+            // Eventos de mouse
+            canvas.addEventListener('mousedown', (e) => {
+                if (tipo === 'cliente') {
+                    isDrawingCliente = true;
+                    const pos = getMousePos(e);
+                    lastXCliente = pos.x;
+                    lastYCliente = pos.y;
+                } else {
+                    isDrawingTecnico = true;
+                    const pos = getMousePos(e);
+                    lastXTecnico = pos.x;
+                    lastYTecnico = pos.y;
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                if (tipo === 'cliente') isDrawingCliente = false;
+                else isDrawingTecnico = false;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const pos = getMousePos(e);
+                draw(pos.x, pos.y, tipo === 'cliente');
+            });
+
+            canvas.addEventListener('mouseout', () => {
+                if (tipo === 'cliente') isDrawingCliente = false;
+                else isDrawingTecnico = false;
+            });
+
+            // Eventos de toque
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (tipo === 'cliente') {
+                    isDrawingCliente = true;
+                    const pos = getTouchPos(e);
+                    lastXCliente = pos.x;
+                    lastYCliente = pos.y;
+                } else {
+                    isDrawingTecnico = true;
+                    const pos = getTouchPos(e);
+                    lastXTecnico = pos.x;
+                    lastYTecnico = pos.y;
+                }
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const pos = getTouchPos(e);
+                draw(pos.x, pos.y, tipo === 'cliente');
+            });
+
+            canvas.addEventListener('touchend', () => {
+                if (tipo === 'cliente') isDrawingCliente = false;
+                else isDrawingTecnico = false;
+            });
+
+            // Configurar estilo do traço
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#000';
+        }
+
+        function clearCanvas(tipo) {
+            if (tipo === 'cliente') {
+                ctxCliente.clearRect(0, 0, canvasCliente.width, canvasCliente.height);
+                state.assinaturas.cliente = null;
+            } else {
+                ctxTecnico.clearRect(0, 0, canvasTecnico.width, canvasTecnico.height);
+                state.assinaturas.tecnico = null;
+            }
+            showNotification('Assinatura limpa', 'info');
+        }
+
+        function populateMaterialsDatalist() {
+            estoqueData.forEach(item => {
+                const option = document.createElement('option');
+                option.value = `${item.codigo} – ${item.material}`;
+                materiaisDatalist.appendChild(option);
+            });
+        }
+
+				// ADICIONE ESTA FUNÇÃO ANTES de handleFileSelect (linha ~885)
+		async function compressImage(base64, maxWidth = 1280, quality = 0.7) {
+			return new Promise(resolve => {
+				const img = new Image();
+				img.onload = () => {
+					const canvas = document.createElement('canvas');
+
+					const ratio = img.width / img.height;
+					if (img.width > maxWidth) {
+						canvas.width = maxWidth;
+						canvas.height = maxWidth / ratio;
+					} else {
+						canvas.width = img.width;
+						canvas.height = img.height;
+					}
+
+					const ctx = canvas.getContext('2d');
+					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+					const compressed = canvas.toDataURL('image/jpeg', quality);
+					resolve(compressed);
+				};
+				img.src = base64;
+			});
+		}
+
+		// SUBSTITUA a função handleFileSelect existente por esta:
+		async function handleFileSelect(e) {
+			const files = e.target.files;
+			
+			if (state.fotos.length + files.length > 10) {
+				showNotification('Máximo de 10 arquivos permitidos', 'error');
+				return;
+			}
+
+			for (let i = 0; i < files.length; i++) {
+				const file = files[i];
+				
+				if (!file.type.match('image.*')) {
+					showNotification('Apenas imagens são permitidas', 'error');
+					continue;
+				}
+
+				const reader = new FileReader();
+				
+				reader.onload = (function(file) {
+					return async function(e) {
+						try {
+							showNotification('Processando imagem...', 'info');
+							
+							// ✅ COMPRIMIR A IMAGEM
+							const imagemComprimida = await compressImage(e.target.result, 1200, 0.8);
+							
+							const fileData = {
+								name: file.name,
+								type: 'image/jpeg', // Forçar JPEG
+								data: imagemComprimida, // ✅ Usar versão comprimida
+								timestamp: new Date().toISOString()
+							};
+							
+							state.fotos.push(fileData);
+							renderPhotoPreview(fileData);
+							showNotification('Foto adicionada e otimizada', 'success');
+						} catch (error) {
+							console.error('Erro ao processar imagem:', error);
+							showNotification('Erro ao processar imagem', 'error');
+						}
+					};
+				})(file);
+				
+				reader.readAsDataURL(file);
+			}
+			
+			fotosInput.value = '';
+		}
+
+        function renderPhotoPreview(fileData) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'relative group';
+            
+            // Remove a condição para vídeo - agora só mostra imagens
+            previewItem.innerHTML = `
+                <img src="${fileData.data}" class="photo-preview cursor-pointer">
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <button class="view-photo-btn p-2 bg-white rounded-full shadow-lg text-gray-800 mr-1" data-index="${state.fotos.length - 1}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="delete-photo-btn p-2 bg-white rounded-full shadow-lg text-red-600" data-index="${state.fotos.length - 1}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            fotosPreview.appendChild(previewItem);
+            
+            previewItem.querySelector('.view-photo-btn').addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-index'));
+                viewPhoto(index);
+            });
+            
+            previewItem.querySelector('.delete-photo-btn').addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-index'));
+                deletePhoto(index);
+            });
+        }
+
+        function viewPhoto(index) {
+            const fileData = state.fotos[index];
+            modalImage.src = fileData.data;
+            imageModal.style.display = 'flex';
+        }
+
+        function deletePhoto(index) {
+            state.fotos.splice(index, 1);
+            renderPhotos();
+            showNotification('Arquivo removido', 'info');
+        }
+
+        function renderPhotos() {
+            fotosPreview.innerHTML = '';
+            state.fotos.forEach((fileData, index) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'relative group';
+                
+                previewItem.innerHTML = `
+                    <img src="${fileData.data}" class="photo-preview cursor-pointer">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <button class="view-photo-btn p-2 bg-white rounded-full shadow-lg text-gray-800 mr-1" data-index="${index}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="delete-photo-btn p-2 bg-white rounded-full shadow-lg text-red-600" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                fotosPreview.appendChild(previewItem);
+                
+                previewItem.querySelector('.view-photo-btn').addEventListener('click', function() {
+                    const idx = parseInt(this.getAttribute('data-index'));
+                    viewPhoto(idx);
+                });
+                
+                previewItem.querySelector('.delete-photo-btn').addEventListener('click', function() {
+                    const idx = parseInt(this.getAttribute('data-index'));
+                    deletePhoto(idx);
+                });
+            });
+        }
+
+        function addMaterial() {
+            const material = materialInput.value.trim();
+            const qtd = materialQtd.value.trim();
+            
+            if (!material || !qtd || Number(qtd) <= 0) {
+                showNotification('Preencha o material e a quantidade válida', 'error');
+                return;
+            }
+            
+            let codigo = '';
+            let descricao = material;
+            
+            if (material.indexOf(' – ') !== -1) {
+                const parts = material.split(' – ');
+                codigo = parts[0].trim();
+                descricao = parts.slice(1).join(' – ').trim();
+            } else if (/^\d+/.test(material)) {
+                codigo = material;
+                descricao = '';
+            }
+            
+            state.materiais.push({
+                codigo,
+                descricao: descricao || material,
+                quantidade: Number(qtd)
+            });
+            
+            materialInput.value = '';
+            materialQtd.value = '';
+            renderMateriais();
+            showNotification('Material adicionado', 'success');
+        }
+
+        function renderMateriais() {
+            materiaisLista.innerHTML = '';
+            
+            state.materiais.forEach((item, index) => {
+                const materialItem = document.createElement('div');
+                materialItem.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg';
+                materialItem.innerHTML = `
+                    <div>
+                        <span class="font-medium">${item.descricao}</span>
+                        ${item.codigo ? `<span class="text-sm text-gray-500 ml-2">(${item.codigo})</span>` : ''}
+                        <span class="text-blue-600 font-semibold ml-2">- ${item.quantidade} un.</span>
+                    </div>
+                    <button class="delete-material-btn text-red-500 hover:text-red-700 transition" data-index="${index}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                materiaisLista.appendChild(materialItem);
+            });
+            
+            document.querySelectorAll('.delete-material-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    state.materiais.splice(index, 1);
+                    renderMateriais();
+                    showNotification('Material removido', 'info');
+                });
+            });
+        }
+
+        function collectFormData() {
+            return {
+                cliente: document.getElementById('cliente').value,
+                cidade: document.getElementById('cidade').value,
+                equipamento: document.getElementById('equipamento').value,
+                equipamentoOutro: document.getElementById('equipamento-outro').value,
+                tecnico: document.getElementById('tecnico').value,
+                servico: document.getElementById('servico').value,
+                dataInicial: document.getElementById('data-inicial').value,
+                horaInicial: document.getElementById('hora-inicial').value,
+                dataFinal: document.getElementById('data-final').value,
+                horaFinal: document.getElementById('hora-final').value,
+                veiculo: document.getElementById('veiculo').value,
+                estoque: document.getElementById('estoque').value,
+                numeroSerie: document.getElementById('numero-serie').value,
+                relatorioMaquina: document.getElementById('relatorio-maquina').value,
+                clienteNome: document.getElementById('cliente-nome').value,
+                clienteEmail: document.getElementById('cliente-email').value,
+                tecnicoNome: document.getElementById('tecnico-nome').value
+            };
+        }
+
+        function validateForm() {
+            const requiredFields = [
+                'cliente', 'cidade', 'equipamento', 'tecnico', 'servico',
+                'data-inicial', 'hora-inicial', 'data-final', 'hora-final',
+                'relatorio-maquina', 'cliente-nome', 'cliente-email', 'tecnico-nome'
+            ];
+
+            for (const fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    showNotification(`Preencha o campo: ${field.labels[0].textContent}`, 'error');
+                    field.focus();
+                    return false;
+                }
+            }
+
+            if (!state.assinaturas.cliente) {
+                showNotification('Assinatura do cliente é obrigatória', 'error');
+                return false;
+            }
+
+            if (!state.assinaturas.tecnico) {
+                showNotification('Assinatura do técnico é obrigatória', 'error');
+                return false;
+            }
+
+            return true;
+        }
+		
+// ======== GERENCIAMENTO DE FORMULÁRIOS SALVOS (INDEXEDDB) ========
+
+// Mapeamento: keys internas -> ids reais dos inputs (MANTIDO)
+const FIELD_ID_MAP = {
+    cliente: 'cliente',
+    cidade: 'cidade',
+    equipamento: 'equipamento',
+    equipamentoOutro: 'equipamento-outro',
+    tecnico: 'tecnico',
+    servico: 'servico',
+    dataInicial: 'data-inicial',
+    horaInicial: 'hora-inicial',
+    dataFinal: 'data-final',
+    horaFinal: 'hora-final',
+    veiculo: 'veiculo',
+    estoque: 'estoque',
+    numeroSerie: 'numero-serie',
+    relatorioMaquina: 'relatorio-maquina',
+    clienteNome: 'cliente-nome',
+    clienteEmail: 'cliente-email',
+    tecnicoNome: 'tecnico-nome'
+};
+
+// ======== CONFIGURAÇÃO DO INDEXEDDB ========
+const DB_NAME = 'FormulariosDB';
+const DB_VERSION = 4;
+const STORE_NAME = 'formularios';
+
+let dbPromise;
+
+// Inicializa a conexão com o IndexedDB
+function initDB() {
+    if (dbPromise) return dbPromise;
+
+    dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
+        upgrade(db, oldVersion) {
+            console.log('Migrando banco de dados da versão', oldVersion, 'para', DB_VERSION);
+            
+            // Sempre cria a store se não existir
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                console.log('Criando nova store:', STORE_NAME);
+                const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                store.createIndex('cliente', 'cliente', { unique: false });
+                store.createIndex('servico', 'servico', { unique: false });
+                store.createIndex('sincronizado', 'sincronizado', { unique: false });
+            } else {
+                console.log('Store já existe:', STORE_NAME);
+                
+                // Para migrações, fazemos uma de cada vez
+                const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
+                
+                // Migração da versão 1 para 2: adicionar campo sincronizado
+                if (oldVersion < 2) {
+                    console.log('Migrando para versão 2: adicionando campo sincronizado');
+                    return store.getAll().then(forms => {
+                        const updates = forms.map(form => {
+                            if (form.sincronizado === undefined) {
+                                form.sincronizado = false;
+                                return store.put(form);
+                            }
+                        }).filter(Boolean);
+                        return Promise.all(updates);
+                    });
+                }
+                
+                // Migração da versão 2 para 3: adicionar campo chaveUnica
+                if (oldVersion < 3) {
+                    console.log('Migrando para versão 3: adicionando campo chaveUnica');
+                    return store.getAll().then(forms => {
+                        const updates = forms.map(form => {
+                            if (form.chaveUnica === undefined) {
+                                form.chaveUnica = generateUniqueKey();
+                                return store.put(form);
+                            }
+                        }).filter(Boolean);
+                        return Promise.all(updates);
+                    });
+                }
+                
+                // Migração da versão 3 para 4: apenas atualização estrutural
+                if (oldVersion < 4) {
+                    console.log('Migrando para versão 4: atualização estrutural');
+                    // Nada para fazer, apenas atualiza a versão
+                    return Promise.resolve();
+                }
+            }
+        },
+    }).then(db => {
+        console.log('Banco de dados inicializado com sucesso');
+        return db;
+    }).catch(error => {
+        console.error('Erro ao inicializar banco de dados:', error);
+        dbPromise = null; // Permite tentar novamente
+        throw error;
+    });
+    
+    return dbPromise;
+}
+
+
+// Função auxiliar para remover registros mais antigos que 24h
+async function limparRegistrosAntigos(db) {
+    const twentyFourHours = 14 * 24 * 60 * 60 * 1000;
+    const cutoff = Date.now() - twentyFourHours;
+
+    try {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+
+        // Abre um cursor (ponteiro) para iterar pelos registros
+        let cursor = await store.openCursor();
+        while (cursor) {
+            if (cursor.key < cutoff) {
+                // Deleta o registro se o ID (timestamp) for mais antigo que o limite
+                cursor.delete(); 
+            }
+            cursor = await cursor.continue();
+        }
+        await tx.done; // Aguarda a conclusão da transação
+    } catch (e) {
+        // Se a store não existir (erro na inicialização), ignorar
+        console.warn("Erro ao tentar limpar registros antigos (pode ser inicialização):", e);
+    }
+}
+
+// Salva o formulário no IndexedDB
+async function salvarFormularioLocal() {
+    if (!validateForm()) return;
+    const f = collectFormData(); 
+
+    const id = Date.now();
+
+    // ✅ GERAR OS PDFs ANTES DE SALVAR
+    console.log('🔄 Gerando PDFs...');
+    const fichaPDFBase64 = await gerarFichaPDFBase64(
+        f, 
+        state.materiais, 
+        state.fotos, 
+        state.assinaturas,
+        id
+    );
+    
+    const relatorioPDFBase64 = await gerarRelatorioPDFBase64(
+        f, 
+        state.materiais, 
+        state.fotos, 
+        state.assinaturas
+    );
+    console.log('✅ PDFs gerados');
+
+    const registro = {
+        id: id, 
+        createdAt: new Date().toISOString(),
+        cliente: f.cliente || '',
+        servico: f.servico || '',
+        formData: f,
+        // Incluímos fotos e assinaturas.
+        fotos: state.fotos || [], 
+        materiais: state.materiais || [],
+        assinaturas: state.assinaturas || {},
+		sincronizado: false,
+		syncedAt: null,
+		chaveUnica: generateUniqueKey(),
+        // ✅ SALVAR OS PDFs NO INDEXEDDB
+        fichaPDF: fichaPDFBase64,
+        relatorioPDF: relatorioPDFBase64
+    };
+
+    try {
+        const db = await initDB();
+        await db.put(STORE_NAME, registro);
+        await registrarBackgroundSync();
+        await updatePendingCount();
+
+        if (navigator.onLine) {
+            setTimeout(() => attemptSync(), 1000);
+        }
+
+        showNotification('Formulário salvo localmente!', 'success');
+        await renderFormulariosSalvos();
+        
+    } catch (e) {
+        console.error("Erro ao salvar:", e);
+        showNotification('Erro ao salvar formulário', 'error');
+    }
+}
+
+// Renderiza a seção de formulários salvos
+async function renderFormulariosSalvos() {
+    const containerId = 'formularios-salvos';
+    let container = document.getElementById(containerId);
+
+    if (!container) {
+        container = document.createElement('section');
+        container.id = containerId;
+        container.className = 'form-section';
+        // ASSUME-SE que document.querySelector('main') existe
+        const main = document.querySelector('main');
+        if (main) {
+            main.appendChild(container);
+        } else {
+            console.error("Elemento 'main' não encontrado. Não é possível renderizar a seção de salvos.");
+            return;
+        }
+    }
+	
+	
+
+    // Estrutura HTML
+container.innerHTML = `
+    <h2 class="text-xl font-semibold flex items-center">
+        <i class="fas fa-history text-blue-600 mr-2"></i> Formulários Salvos
+        <span class="ml-2 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+            ${syncState.pendingCount} pendente(s)
+        </span>
+    </h2>
+    <div id="lista-formularios" class="space-y-2"></div>
+`;
+
+    const lista = container.querySelector('#lista-formularios');
+
+    try {
+        const db = await initDB();
+
+        // Faz a limpeza antes de ler a lista
+        await limparRegistrosAntigos(db);
+
+        // Obtém todos os registros do IndexedDB
+        let registros = await db.getAll(STORE_NAME);
+        
+        // Ordenar pelo ID (mais novo primeiro)
+        registros.sort((a, b) => b.id - a.id); 
+
+        if (registros.length === 0) {
+            lista.innerHTML = `<p class="text-gray-500 text-sm">Nenhum formulário salvo nas últimas 24h.</p>`;
+            return;
+        }
+
+        // Renderiza os itens na lista
+registros.forEach(registro => {
+    const dataLegivel = new Date(registro.id).toLocaleString();
+    const statusIcon = registro.sincronizado 
+        ? '<i class="fas fa-check-circle text-green-500" title="Sincronizado"></i>'
+        : '<i class="fas fa-clock text-yellow-500" title="Pendente de sincronização"></i>';
+    
+    const item = document.createElement('div');
+    item.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm';
+    item.innerHTML = `
+        <div class="flex items-center">
+            ${statusIcon}
+            <div class="ml-2">
+                <div class="font-medium text-gray-800">${registro.cliente || '—'}</div>
+                <div class="text-sm text-gray-500">${registro.servico || '—'} • ${dataLegivel}</div>
+            </div>
+        </div>
+        <div class="flex space-x-2">
+            <button class="btn-secondary px-3 py-1 rounded edit-btn" data-id="${registro.id}">
+                <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn-secondary px-3 py-1 rounded text-red-600 delete-btn" data-id="${registro.id}">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    lista.appendChild(item);
+});
+
+        // Delegação dos eventos - DEVE SER FEITA APÓS INSERIR OS ITENS NA LISTA
+        lista.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const id = e.currentTarget.dataset.id;
+                carregarFormularioLocal(id); 
+            });
+        });
+
+        lista.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const id = e.currentTarget.dataset.id;
+                removerFormularioLocal(id);
+            });
+        });
+
+    } catch (e) {
+        console.error("Erro fatal ao renderizar formulários do IndexedDB:", e);
+        lista.innerHTML = `<p class="text-red-500 text-sm">Erro ao carregar lista de formulários. (Verifique a console.)</p>`;
+    }
+}
+
+// Carrega um formulário salvo (popula inputs, materiais, fotos e assinaturas)
+async function carregarFormularioLocal(id) {
+    try {
+        const db = await initDB();
+        // 'get' busca um registro pela chave primária (id)
+        const registro = await db.get(STORE_NAME, Number(id));
+
+        if (!registro) {
+            showNotification('Registro não encontrado', 'error');
+            return;
+        }
+
+        const f = registro.formData || {};
+
+        // 1. Preencher campos usando o mapa (LÓGICA MANTIDA)
+        for (const key in FIELD_ID_MAP) {
+            const elId = FIELD_ID_MAP[key];
+            const el = document.getElementById(elId);
+            if (!el) continue;
+
+            const val = f[key] !== undefined ? f[key] : '';
+            if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.value = val;
+                // trigger change visual 
+                if (elId === 'equipamento') {
+                    // Assume-se que 'equipamentoOutro' está definido globalmente
+                    equipamentoOutro.classList.toggle('hidden', el.value !== 'OUTRO'); 
+                }
+            }
+        }
+
+        // 2. Restaurar materiais e fotos no state e na UI
+        // ASSUME-SE que 'state' e 'renderMateriais/renderPhotos' estão definidos globalmente
+        state.materiais = registro.materiais ? JSON.parse(JSON.stringify(registro.materiais)) : [];
+        renderMateriais(); 
+
+        state.fotos = registro.fotos ? JSON.parse(JSON.stringify(registro.fotos)) : [];
+        renderPhotos(); 
+
+        // 3. Restaurar assinaturas
+        // ASSUME-SE que 'canvasCliente/ctxCliente/etc.' estão definidos globalmente
+        state.assinaturas = registro.assinaturas || { cliente: null, tecnico: null };
+        if (state.assinaturas.cliente) {
+            drawDataUrlOnCanvas(state.assinaturas.cliente, canvasCliente, ctxCliente);
+        } else {
+            ctxCliente.clearRect(0, 0, canvasCliente.width, canvasCliente.height);
+        }
+        if (state.assinaturas.tecnico) {
+            drawDataUrlOnCanvas(state.assinaturas.tecnico, canvasTecnico, ctxTecnico);
+        } else {
+            ctxTecnico.clearRect(0, 0, canvasTecnico.width, canvasTecnico.height);
+        }
+
+        showNotification('Formulário carregado para edição.', 'info');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+        console.error("Erro ao carregar registro do IndexedDB:", e);
+        showNotification('Erro ao carregar formulário.', 'error');
+    }
+}
+
+// Remove um formulário salvo
+async function removerFormularioLocal(id) {
+    try {
+        const db = await initDB();
+        // 'delete' remove o registro pela chave primária (id)
+        await db.delete(STORE_NAME, Number(id));
+
+        showNotification('Formulário excluído.', 'info');
+        await renderFormulariosSalvos(); // Renderiza a UI após a exclusão
+    } catch (e) {
+        console.error("Erro ao remover do IndexedDB:", e);
+        showNotification('Erro ao excluir formulário.', 'error');
+    }
+}
+
+// Helper: desenha um dataURL em um canvas mantendo proporção
+function drawDataUrlOnCanvas(dataUrl, canvas, ctx) {
+    const img = new Image();
+    img.onload = () => {
+        // Limpa canvas e desenha centrado/escalado
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ajustar resolução do canvas para evitar distorção em retina
+        // (supondo que canvas já tenha tamanho no CSS, ajustamos o tamanho real)
+        const ratio = window.devicePixelRatio || 1;
+        if (canvas.width !== canvas.clientWidth * ratio) {
+            canvas.width = canvas.clientWidth * ratio;
+            canvas.height = canvas.clientHeight * ratio;
+            ctx.scale(ratio, ratio);
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#000';
+        }
+        // desenhar
+        ctx.drawImage(img, 0, 0, canvas.clientWidth, canvas.clientHeight);
+    };
+    img.src = dataUrl;
+}
+
+// =======================================================
+// NOVO PONTO DE INÍCIO: Garante que o DB seja inicializado
+// =======================================================
+
+async function startApp() {
+    try {
+        // Inicializar banco de dados com tratamento de erro específico
+        try {
+            await initDB();
+        } catch (dbError) {
+            console.error('Erro crítico no banco de dados:', dbError);
+            // Tenta recriar o banco de dados
+            await recriarBancoDados();
+        }
+        
+        // Inicializar sistema de sincronização
+        initSync();
+        
+        // Renderizar formulários salvos
+        await renderFormulariosSalvos();
+        
+        // Resto das configurações...
+        updateOnlineStatus();
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        setupEventListeners();
+        setupSignatureCanvas(canvasCliente, ctxCliente, 'cliente');
+        setupSignatureCanvas(canvasTecnico, ctxTecnico, 'tecnico');
+        populateMaterialsDatalist();
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js?v=001')
+                    .then(reg => {
+                        console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
+                    })
+                    .catch(error => {
+                        console.error('Falha no registro do Service Worker:', error);
+                    });
+            });
+        }
+        
+    } catch (error) {
+        console.error("Falha ao iniciar a aplicação:", error);
+        showNotification('Erro ao inicializar aplicação. Recarregue a página.', 'error');
+    }
+}
+
+// Função para recriar o banco em caso de erro
+async function recriarBancoDados() {
+    try {
+        console.log('Tentando recriar banco de dados...');
+        // Fecha conexão existente
+        if (dbPromise) {
+            const db = await dbPromise;
+            db.close();
+            dbPromise = null;
+        }
+        
+        // Deleta o banco existente
+        await idb.deleteDB(DB_NAME);
+        console.log('Banco antigo deletado');
+        
+        // Recria o banco
+        await initDB();
+        console.log('Novo banco criado com sucesso');
+        
+    } catch (error) {
+        console.error('Falha ao recriar banco de dados:', error);
+        throw error;
+    }
+}
+
+// Substitui o listener antigo: Inicia a aplicação após o DOM carregar
+document.addEventListener('DOMContentLoaded', startApp);
+
+// O listener do botão de exportação (MANTIDO)
+// ASSUME-SE que 'exportBtn' está definido globalmente
+exportBtn.addEventListener('click', function(e) {
+    // salvar local antes de exportar
+    salvarFormularioLocal();
+    // continue com a rotina existente de export...
+});
+
+// ======== GERADOR DE PDF (FORMATAÇÃO ORIGINAL DO GERADOR PDF.html) ========
+
+// Garante que o jsPDF foi carregado antes de gerar
+async function gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas, formularioId = null) {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        console.warn("jsPDF ainda não carregado, adiando geração...");
+        setTimeout(() => gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas, formularioId), 500);
+        return;
+    }
+
+    try {
+        // ✅ PASSAR O ID PARA AS FUNÇÕES
+        const fichaPDF = await gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, formularioId);
+        
+        // Converter de dataURI para Blob e fazer download
+        const fichaBlob = dataURItoBlob(fichaPDF);
+        downloadBlob(fichaBlob, 'Ficha_Manutencao.pdf');
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const relatorioPDF = await gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas, formularioId);
+        const relatorioBlob = dataURItoBlob(relatorioPDF);
+        downloadBlob(relatorioBlob, 'Relatorio_Servico.pdf');
+        
+        showNotification("PDFs baixados com sucesso!", "success");
+    } catch (e) {
+        console.error("Erro ao gerar PDFs:", e);
+        showNotification("Erro ao gerar PDFs", "error");
+    }
+}
+
+// Funções auxiliares para download
+function dataURItoBlob(dataURI) {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+}
+
+function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Função auxiliar para formatar data
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+// ======== FICHA DE MANUTENÇÃO ========
+// Versão modificada que retorna Base64 ao invés de fazer download
+async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "mm", "a4");
+    const logo = await carregarImagem("Logo.png");
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 20;
+
+    // Logo e cabeçalho
+    doc.setFillColor(0, 82, 163);
+    doc.rect(0, 0, pageWidth, 17, 'F');
+    
+    if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FICHA DE MANUTENÇÃO', pageWidth / 2, 11, { align: 'center' });
+    y = 22;
+
+    const tableStyles4Col = {
+        styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
+        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+        columnStyles: {
+            0: { cellWidth: (pageWidth - 16) / 4 },
+            1: { cellWidth: (pageWidth - 16) / 4 },
+            2: { cellWidth: (pageWidth - 16) / 4 },
+            3: { cellWidth: (pageWidth - 16) / 4 }
+        },
+        margin: { left: 8, right: 8 },
+        theme: 'grid'
+    };
+    
+    const table1Data = [[
+        formData.cliente || '-',
+        formData.cidade || '-',
+        formData.equipamento || '-',
+        formData.numeroSerie || '-'
+    ]];
+    
+    doc.autoTable({
+        startY: y,
+        head: [['CLIENTE', 'CIDADE', 'EQUIPAMENTO', 'Nº SÉRIE']],
+        body: table1Data,
+        ...tableStyles4Col
+    });
+    
+    y = doc.lastAutoTable.finalY + 4;
+    
+    const table2Data = [[
+        formData.tecnico || '-',
+        formData.veiculo || '-',
+        formData.estoque || '-',
+        formData.dataInicial ? formatDate(formData.dataInicial) : '-'
+    ]];
+    
+    doc.autoTable({
+        startY: y,
+        head: [['TÉCNICO', 'VEÍCULO', 'ESTOQUE', 'DATA']],
+        body: table2Data,
+        ...tableStyles4Col
+    });
+    
+    y = doc.lastAutoTable.finalY + 8;
+    
+    doc.setTextColor(0, 82, 163);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MATERIAIS UTILIZADOS', 10, y);
+    y += 6;
+    
+    const materialsData = [];
+    if (materiais && materiais.length > 0) {
+        materiais.forEach(material => {
+            materialsData.push([
+                material.codigo || '',
+                material.quantidade || '',
+                material.descricao || ''
+            ]);
+        });
+    } else {
+        materialsData.push(['', '', 'Nenhum material utilizado.']);
+    }
+    
+    doc.autoTable({
+        startY: y,
+        head: [['CÓDIGO', 'QNTD', 'MATERIAIS']],
+        body: materialsData,
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+        columnStyles: {
+            0: { cellWidth: 25, halign: 'center' },
+            1: { cellWidth: 20, halign: 'center' },
+            2: { cellWidth: pageWidth - 16 - 45, halign: 'left' }
+        },
+        margin: { left: 8, right: 8 },
+        theme: 'grid'
+    });
+    
+    y = doc.lastAutoTable.finalY + 8;
+    
+    doc.setTextColor(0, 82, 163);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ORDEM DE SERVIÇO', 10, y);
+    y += 6;
+    
+    const table3Data = [[
+        formData.osComplementar || '',
+        formData.osServico || ''
+    ]];
+    
+    doc.autoTable({
+        startY: y,
+        head: [['OS COMPLEMENTAR', 'OS SERVIÇO']],
+        body: table3Data,
+        styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
+        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+        columnStyles: {
+            0: { cellWidth: (pageWidth - 16) / 2 },
+            1: { cellWidth: (pageWidth - 16) / 2 }
+        },
+        margin: { left: 8, right: 8 },
+        theme: 'grid'
+    });
+    
+    y = doc.lastAutoTable.finalY + 15;
+    
+    const signatureWidth = 50;
+    const signatureHeight = 25;
+    const spacing = (pageWidth - (signatureWidth * 2)) / 3;
+    
+    if (assinaturas && assinaturas.tecnico) {
+        try {
+            doc.addImage(assinaturas.tecnico, 'PNG', spacing, y, signatureWidth, signatureHeight);
+        } catch (e) {
+            console.error('Erro ao adicionar assinatura do técnico:', e);
+        }
+    }
+    
+    if (assinaturas && assinaturas.cliente) {
+        try {
+            doc.addImage(assinaturas.cliente, 'PNG', spacing * 2 + signatureWidth, y, signatureWidth, signatureHeight);
+        } catch (e) {
+            console.error('Erro ao adicionar assinatura do cliente:', e);
+        }
+    }
+    
+    y += signatureHeight + 2;
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(spacing, y, spacing + signatureWidth, y);
+    doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text('TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
+    doc.text('CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
+    
+    doc.save('Ficha_Manutencao.pdf');
+    return doc.output('datauristring');
+}
+
+// Versão modificada do Relatório que retorna Base64
+async function gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "mm", "a4");
+    const logo = await carregarImagem("Logo.png");
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 20;
+
+    // Logo e cabeçalho
+    doc.setFillColor(0, 82, 163);
+    doc.rect(0, 0, pageWidth, 17, 'F');
+    
+    if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RELATÓRIO DE PRESTAÇÃO DE SERVIÇO', pageWidth / 2, 11, { align: 'center' });
+    y = 22;
+
+    const tableStyles3Col = {
+        styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
+        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+        columnStyles: {
+            0: { cellWidth: (pageWidth - 16) / 3, halign: 'center' },
+            1: { cellWidth: (pageWidth - 16) / 3, halign: 'center' },
+            2: { cellWidth: (pageWidth - 16) / 3, halign: 'center' }
+        },
+        margin: { left: 8, right: 8 },
+        theme: 'grid'
+    };
+    
+    const table1Data = [[
+        formData.cliente || '-',
+        formData.cidade || '-',
+        formData.equipamento || '-'
+    ]];
+    
+    doc.autoTable({
+        startY: y,
+        head: [['CLIENTE', 'CIDADE', 'EQUIPAMENTO']],
+        body: table1Data,
+        ...tableStyles3Col
+    });
+    
+    y = doc.lastAutoTable.finalY + 4;
+    
+    const table2Data = [[
+        formData.tecnico || '-',
+        formData.dataInicial ? formatDate(formData.dataInicial) : '-',
+        formData.dataFinal ? formatDate(formData.dataFinal) : '-'
+    ]];
+    
+    doc.autoTable({
+        startY: y,
+        head: [['TÉCNICO', 'DATA INICIAL', 'DATA FINAL']],
+        body: table2Data,
+        ...tableStyles3Col
+    });
+    
+    y = doc.lastAutoTable.finalY + 4;
+    
+    const table3Data = [[
+        formData.servico || '-',
+        formData.horaInicial || '-',
+        formData.horaFinal || '-'
+    ]];
+    
+    doc.autoTable({
+        startY: y,
+        head: [['SERVIÇO', 'HORÁRIO INICIAL', 'HORÁRIO FINAL']],
+        body: table3Data,
+        ...tableStyles3Col
+    });
+    
+    y = doc.lastAutoTable.finalY + 8;
+    
+    doc.setTextColor(0, 82, 163);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RELATÓRIO DA MÁQUINA', 10, y);
+    y += 6;
+    
+    const relatorio = formData.relatorioMaquina || 'Nenhum relatório preenchido.';
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    
+    const margin = 10;
+    const textWidth = pageWidth - (margin * 2);
+    const lineHeight = 4.5;
+    
+    const lines = doc.splitTextToSize(relatorio, textWidth);
+    const textHeight = lines.length * lineHeight;
+    
+    if (y + textHeight + 30 > pageHeight) {
+        doc.addPage();
+        y = 20;
+        doc.setTextColor(0, 82, 163);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RELATÓRIO DA MÁQUINA', 10, y);
+        y += 6;
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+    }
+    
+    doc.setFillColor(245, 248, 251);
+    doc.setDrawColor(208, 218, 230);
+    doc.roundedRect(margin - 2, y - 2, textWidth + 4, textHeight + 4, 2, 2, 'FD');
+    
+    doc.text(lines, margin, y + 2);
+    y += textHeight + 10;
+    
+    if (fotos && fotos.length > 0) {
+        if (y + 50 > pageHeight) {
+            doc.addPage();
+            y = 20;
+        }
+        
+        doc.setTextColor(0, 82, 163);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('FOTOS DO SERVIÇO', 10, y);
+        y += 6;
+        
+        const numFotos = fotos.length;
+        let imgWidth, imgHeight, imgsPerRow;
+        
+        if (numFotos === 1) {
+            imgWidth = 80;
+            imgHeight = 60;
+            imgsPerRow = 1;
+        } else if (numFotos === 2) {
+            imgWidth = 65;
+            imgHeight = 50;
+            imgsPerRow = 2;
+        } else if (numFotos === 3) {
+            imgWidth = 50;
+            imgHeight = 40;
+            imgsPerRow = 3;
+        } else if (numFotos <= 4) {
+            imgWidth = 45;
+            imgHeight = 35;
+            imgsPerRow = 4;
+        } else if (numFotos <= 6) {
+            imgWidth = 45;
+            imgHeight = 35;
+            imgsPerRow = 3;
+        } else {
+            imgWidth = 40;
+            imgHeight = 30;
+            imgsPerRow = 4;
+        }
+        
+        const spacing = (pageWidth - 16 - (imgWidth * imgsPerRow)) / (imgsPerRow + 1);
+        let currentX = 8 + spacing;
+        let currentY = y;
+        let photoCount = 0;
+        
+        for (let i = 0; i < numFotos; i++) {
+            if (photoCount > 0 && photoCount % imgsPerRow === 0) {
+                currentY += imgHeight + 6;
+                
+                if (currentY + imgHeight > pageHeight - 15) {
+                    doc.addPage();
+                    currentY = 20;
+                }
+                
+                currentX = 8 + spacing;
+            }
+            
+			try {
+				// 📌 1. Recompressão da imagem ESPECÍFICA PARA PDF
+				const compressedImage = await compressImage(fotos[i].data, 1400, 0.65);
+
+				// 📌 2. Adicionar imagem já comprimida
+				doc.addImage(
+					compressedImage,
+					'JPEG',
+					currentX,
+					currentY,
+					imgWidth,
+					imgHeight
+				);
+
+			} catch (e) {
+				console.error('Erro ao adicionar imagem comprimida:', e);
+			}
+            
+            currentX += imgWidth + spacing;
+            photoCount++;
+        }
+        
+        y = currentY + imgHeight + 8;
+    }
+    
+    if (y + 35 > pageHeight) {
+        doc.addPage();
+        y = 20;
+    }
+    
+    const signatureWidth = 50;
+    const signatureHeight = 25;
+    const spacing = (pageWidth - (signatureWidth * 2)) / 3;
+    
+    if (assinaturas && assinaturas.tecnico) {
+        try {
+            doc.addImage(assinaturas.tecnico, 'PNG', spacing, y, signatureWidth, signatureHeight);
+        } catch (e) {
+            console.error('Erro ao adicionar assinatura do técnico:', e);
+        }
+    }
+    
+    if (assinaturas && assinaturas.cliente) {
+        try {
+            doc.addImage(assinaturas.cliente, 'PNG', spacing * 2 + signatureWidth, y, signatureWidth, signatureHeight);
+        } catch (e) {
+            console.error('Erro ao adicionar assinatura do cliente:', e);
+        }
+    }
+    
+    y += signatureHeight + 2;
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(spacing, y, spacing + signatureWidth, y);
+    doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text('TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
+    doc.text('CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
+    
+    doc.save('Relatorio_Servico.pdf');
+    return doc.output('datauristring');
+}
+
+// ======== FUNÇÃO AUXILIAR PARA CARREGAR IMAGEM ========
+function carregarImagem(src) {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+    });
+}
+
+
+// ======== CHAMAR AO EXPORTAR ========
+// Chamar dentro do exportData() (logo depois do download do JSON):
+// gerarPDFsAutomaticamente(formData, state.materiais, state.fotos, state.assinaturas);
+
+
+
+
+        function exportData() {
+            if (!validateForm()) return;
+
+            const formData = collectFormData();
+            
+            const dataToExport = {
+                formData: formData,
+                fotos: state.fotos,
+                materiais: state.materiais,
+                assinaturas: state.assinaturas,
+                exportTimestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Nome do arquivo com data e cliente
+            const cliente = formData.cliente.replace(/[^a-zA-Z0-9]/g, '_');
+            const data = new Date().toISOString().split('T')[0];
+            link.download = `servico_${cliente}_${data}.json`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Dados exportados com sucesso!', 'success');
+			setTimeout(() => {
+				try {
+          const formId = Date.now();
+					gerarPDFsAutomaticamente(formData, state.materiais, state.fotos, state.assinaturas);
+				} catch (err) {
+					console.error('Erro ao gerar PDFs:', err);
+				}
+			}, 500);
+        }
+
+        function showNotification(message, type) {
+            notification.className = `notification ${type}`;
+            notificationIcon.className = type === 'success' ? 'fas fa-check-circle' : 
+                                       type === 'error' ? 'fas fa-exclamation-circle' : 
+                                       'fas fa-info-circle';
+            notificationText.textContent = message;
+            
+            notification.style.display = 'flex';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+		// ======== INICIALIZAÇÃO DA SINCRONIZAÇÃO ========
+function initSync() {
+    // Obter referências aos elementos
+    syncBtn = document.getElementById('sync-btn');
+    syncBadge = document.getElementById('sync-badge');
+    syncIcon = syncBtn.querySelector('i');
+    
+    // Iniciar verificação de sincronização
+    startSyncInterval();
+    
+    // Atualizar contagem inicial
+    updatePendingCount();
+    
+    // Verificar sincronização quando ficar online
+    window.addEventListener('online', handleOnlineStatus);
+    window.addEventListener('offline', handleOfflineStatus);
+}
+
+// ======== GERENCIAMENTO DO ESTADO ONLINE/OFFLINE ========
+function handleOnlineStatus() {
+    showNotification('Conexão restaurada - Sincronizando...', 'success');
+    startSyncInterval();
+    attemptSync();
+}
+
+function handleOfflineStatus() {
+    showNotification('Sem conexão - Sincronização pausada', 'error');
+    stopSyncInterval();
+    updateSyncButtonState(false);
+}
+
+// ======== CONTROLE DO INTERVALO DE SINCRONIZAÇÃO ========
+function startSyncInterval() {
+    if (!navigator.onLine) return;
+    
+    stopSyncInterval(); // Garantir que não há intervalos duplicados
+    
+    syncState.syncInterval = setInterval(() => {
+        if (navigator.onLine && !syncState.isSyncing) {
+            attemptSync();
+        }
+    }, SYNC_CONFIG.interval);
+}
+
+function stopSyncInterval() {
+    if (syncState.syncInterval) {
+        clearInterval(syncState.syncInterval);
+        syncState.syncInterval = null;
+    }
+}
+
+// ======== SINCRONIZAÇÃO MANUAL ========
+async function manualSync() {
+    if (!navigator.onLine) {
+        showNotification('Sem conexão para sincronizar', 'error');
+        return;
+    }
+    
+    if (syncState.isSyncing) {
+        showNotification('Sincronização já em andamento', 'info');
+        return;
+    }
+    
+    showNotification('Iniciando sincronização manual...', 'info');
+    await attemptSync(true);
+}
+
+// ======== SINCRONIZAÇÃO AUTOMÁTICA ========
+async function attemptSync(isManual = false) {
+    if (syncState.isSyncing) return;
+    
+    try {
+        syncState.isSyncing = true;
+        updateSyncButtonState(true);
+        
+        const pendingForms = await getPendingForms();
+        
+        if (pendingForms.length === 0) {
+            if (isManual) {
+                showNotification('Nenhum formulário pendente para sincronizar', 'info');
+            }
+            return;
+        }
+        
+        if (isManual) {
+            showNotification(`Sincronizando ${pendingForms.length} formulário(s)...`, 'info');
+        }
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // Sincronizar cada formulário pendente
+        for (const form of pendingForms) {
+            try {
+                const success = await syncSingleForm(form);
+                if (success) {
+                    successCount++;
+                    
+                    // Marcar como sincronizado no IndexedDB
+                    await markFormAsSynced(form.id);
+                    
+                    // Pequeno delay entre sincronizações
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } else {
+                    errorCount++;
+                }
+            } catch (error) {
+                console.error(`Erro ao sincronizar formulário ${form.id}:`, error);
+                errorCount++;
+            }
+        }
+        
+        // Atualizar interface
+        await updatePendingCount();
+        await renderFormulariosSalvos();
+        
+        if (isManual || successCount > 0) {
+            const message = successCount > 0 
+                ? `${successCount} formulário(s) sincronizado(s) com sucesso${errorCount > 0 ? `, ${errorCount} falha(s)` : ''}`
+                : 'Falha na sincronização';
+                
+            showNotification(message, successCount > 0 ? 'success' : 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erro geral na sincronização:', error);
+        if (isManual) {
+            showNotification('Erro na sincronização', 'error');
+        }
+    } finally {
+        syncState.isSyncing = false;
+        updateSyncButtonState(false);
+    }
+}
+
+// ======== SINCRONIZAÇÃO INDIVIDUAL DE FORMULÁRIO ========
+async function syncSingleForm(form) {
+    try {
+        console.log('📤 Enviando formulário:', form.id);
+        
+        // ✅ OS PDFs JÁ ESTÃO SALVOS NO FORMULÁRIO
+		const payload = {
+            json_dados: {
+                id: form.id,
+				fichaPDF: form.fichaPDF,
+                relatorioPDF: form.relatorioPDF,
+                chaveUnica: form.chaveUnica
+            },
+            chave: form.chaveUnica
+        };
+        
+        const payloadSize = JSON.stringify(payload).length;
+        const payloadSizeMB = (payloadSize / 1024 / 1024).toFixed(2);
+        
+        console.log(`📦 Tamanho: ${payloadSizeMB}MB`);
+        
+        if (payloadSize > 50 * 1024 * 1024) {
+            throw new Error(`Payload muito grande: ${payloadSizeMB}MB`);
+        }
+        
+        const response = await fetch(SYNC_CONFIG.endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        console.log('✅ Sincronizado:', form.id);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        return false;
+    }
+}
+
+// ======== FUNÇÕES AUXILIARES DO INDEXEDDB ========
+async function getPendingForms() {
+    try {
+        const db = await initDB();
+        const allForms = await db.getAll(STORE_NAME);
+        
+        // Filtrar formulários não sincronizados e dentro do período de retenção
+        const cutoffTime = Date.now() - SYNC_CONFIG.maxRetention;
+        const pendingForms = allForms.filter(form => 
+            !form.sincronizado && form.id > cutoffTime
+        );
+        
+        return pendingForms;
+    } catch (error) {
+        console.error('Erro ao buscar formulários pendentes:', error);
+        return [];
+    }
+}
+
+async function markFormAsSynced(formId) {
+    try {
+        const db = await initDB();
+        const form = await db.get(STORE_NAME, formId);
+        
+        if (form) {
+            form.sincronizado = true;
+            form.syncedAt = new Date().toISOString();
+            await db.put(STORE_NAME, form);
+        }
+    } catch (error) {
+        console.error('Erro ao marcar formulário como sincronizado:', error);
+    }
+}
+
+async function updatePendingCount() {
+    try {
+        const pendingForms = await getPendingForms();
+        syncState.pendingCount = pendingForms.length;
+        updateSyncBadge();
+    } catch (error) {
+        console.error('Erro ao atualizar contagem pendente:', error);
+    }
+}
+
+function updateSyncBadge() {
+    if (syncState.pendingCount > 0) {
+        syncBadge.textContent = syncState.pendingCount;
+        syncBadge.classList.remove('hidden');
+    } else {
+        syncBadge.classList.add('hidden');
+    }
+}
+
+function updateSyncButtonState(syncing) {
+    if (syncing) {
+        syncIcon.classList.add('fa-spin');
+        syncBtn.disabled = true;
+        syncBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        syncIcon.classList.remove('fa-spin');
+        syncBtn.disabled = false;
+        syncBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+    </script>
+</body>
+</html>
