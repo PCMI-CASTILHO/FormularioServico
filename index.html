@@ -1547,7 +1547,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=007')
+                navigator.serviceWorker.register('./sw.js?v=008')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
@@ -1799,10 +1799,10 @@ async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas) {
     doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
     
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text('TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
-    doc.text('CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
+	doc.setFontSize(7);
+	doc.setFont('helvetica', 'normal');
+	doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
+	doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
     
     doc.save('Ficha_Manutencao.pdf');
     return doc.output('dataurlstring');
@@ -2049,10 +2049,10 @@ async function gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas) 
     doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
     
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text('TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
-    doc.text('CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
+	doc.setFontSize(7);
+	doc.setFont('helvetica', 'normal');
+	doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
+	doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
     
     doc.save('Relatorio_Servico.pdf');
     return doc.output('dataurlstring');
