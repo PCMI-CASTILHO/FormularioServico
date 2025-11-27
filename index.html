@@ -1547,7 +1547,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=006')
+                navigator.serviceWorker.register('./sw.js?v=007')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
@@ -1629,10 +1629,7 @@ async function gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas)
 // Função auxiliar para formatar data
 function formatDate(dateString) {
     if (!dateString) return '-';
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    const [year, month, day] = dateString.split('-');
     return `${day}/${month}/${year}`;
 }
 
