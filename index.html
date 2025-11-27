@@ -630,7 +630,7 @@ const estoqueData = [
 const SYNC_CONFIG = {
     endpoint: 'https://vps.pesoexato.com/servico_set',
     interval: 5000, // 5 segundos
-    maxRetention: 14 * 24 * 60 * 60 * 1000 // 24 horas em milissegundos
+    maxRetention: 14 * 24 * 60 * 60 * 1000 // 2 semanas
 };
 
 		// ======== FUNÇÃO PARA GERAR CHAVE ÚNICA ========
@@ -1547,7 +1547,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=004')
+                navigator.serviceWorker.register('./sw.js?v=005')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
