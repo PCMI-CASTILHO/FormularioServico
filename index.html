@@ -864,7 +864,7 @@ let syncBtn, syncBadge, syncIcon;
         }
 
 				// ADICIONE ESTA FUNÇÃO ANTES de handleFileSelect (linha ~885)
-		async function compressImage(base64, maxWidth = 1280, quality = 0.7) {
+		async function compressImage(base64, maxWidth = 900, quality = 0.65) {
 			return new Promise(resolve => {
 				const img = new Image();
 				img.onload = () => {
@@ -914,7 +914,7 @@ let syncBtn, syncBadge, syncIcon;
 							showNotification('Processando imagem...', 'info');
 							
 							// ✅ COMPRIMIR A IMAGEM
-							const imagemComprimida = await compressImage(e.target.result, 1200, 0.8);
+							const imagemComprimida = await compressImage(e.target.result, 900, 0.65);
 							
 							const fileData = {
 								name: file.name,
@@ -1265,8 +1265,7 @@ async function salvarFormularioLocal() {
         f, 
         state.materiais, 
         state.fotos, 
-        state.assinaturas,
-        id
+        state.assinaturas
     );
     
     const relatorioPDFBase64 = await gerarRelatorioPDFBase64(
@@ -1548,7 +1547,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=001')
+                navigator.serviceWorker.register('./sw.js?v=002')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
@@ -1603,55 +1602,28 @@ exportBtn.addEventListener('click', function(e) {
 // ======== GERADOR DE PDF (FORMATAÇÃO ORIGINAL DO GERADOR PDF.html) ========
 
 // Garante que o jsPDF foi carregado antes de gerar
-async function gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas, formularioId = null) {
+async function gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas) {
     if (!window.jspdf || !window.jspdf.jsPDF) {
         console.warn("jsPDF ainda não carregado, adiando geração...");
-        setTimeout(() => gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas, formularioId), 500);
+        setTimeout(() => gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas), 500);
         return;
     }
 
     try {
-        // ✅ PASSAR O ID PARA AS FUNÇÕES
-        const fichaPDF = await gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, formularioId);
+        // Gera e faz download da Ficha
+        await gerarFichaPDFBase64(formData, materiais, fotos, assinaturas);
         
-        // Converter de dataURI para Blob e fazer download
-        const fichaBlob = dataURItoBlob(fichaPDF);
-        downloadBlob(fichaBlob, 'Ficha_Manutencao.pdf');
-        
+        // Pequeno delay entre downloads
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        const relatorioPDF = await gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas, formularioId);
-        const relatorioBlob = dataURItoBlob(relatorioPDF);
-        downloadBlob(relatorioBlob, 'Relatorio_Servico.pdf');
+        // Gera e faz download do Relatório
+        await gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas);
         
         showNotification("PDFs baixados com sucesso!", "success");
     } catch (e) {
         console.error("Erro ao gerar PDFs:", e);
         showNotification("Erro ao gerar PDFs", "error");
     }
-}
-
-// Funções auxiliares para download
-function dataURItoBlob(dataURI) {
-    const byteString = atob(dataURI.split(',')[1]);
-    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
-    return new Blob([ab], { type: mimeString });
-}
-
-function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
 }
 
 // Função auxiliar para formatar data
@@ -2117,19 +2089,10 @@ function carregarImagem(src) {
             link.download = `servico_${cliente}_${data}.json`;
             
             document.body.appendChild(link);
-            link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
             
             showNotification('Dados exportados com sucesso!', 'success');
-			setTimeout(() => {
-				try {
-          const formId = Date.now();
-					gerarPDFsAutomaticamente(formData, state.materiais, state.fotos, state.assinaturas);
-				} catch (err) {
-					console.error('Erro ao gerar PDFs:', err);
-				}
-			}, 500);
         }
 
         function showNotification(message, type) {
