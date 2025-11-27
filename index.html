@@ -1360,7 +1360,7 @@ container.innerHTML = `
         registros.sort((a, b) => b.id - a.id); 
 
         if (registros.length === 0) {
-            lista.innerHTML = `<p class="text-gray-500 text-sm">Nenhum formulário salvo nas últimas 24h.</p>`;
+            lista.innerHTML = `<p class="text-gray-500 text-sm">Nenhum formulário salvo nas últimas 2 semanas.</p>`;
             return;
         }
 
@@ -1547,7 +1547,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=005')
+                navigator.serviceWorker.register('./sw.js?v=006')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
