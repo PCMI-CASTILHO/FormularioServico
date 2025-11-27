@@ -6,7 +6,7 @@
 importScripts('https://cdn.jsdelivr.net/npm/idb@8/build/umd.js');
 
 // Nome do cache — altere ao atualizar
-const CACHE_NAME = 'formulario-cache-v005';
+const CACHE_NAME = 'formulario-cache-v006';
 
 // Arquivos ESSENCIAIS (mínimos)
 const CORE_ASSETS = [
