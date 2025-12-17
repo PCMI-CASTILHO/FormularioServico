@@ -1257,11 +1257,12 @@ async function salvarFormularioLocal() {
     if (!validateForm()) return;
     const f = collectFormData(); 
 
-    const id = Date.now();
+    const idLocal = Date.now();
 
     // ✅ GERAR OS PDFs ANTES DE SALVAR
     console.log('🔄 Gerando PDFs...');
     const fichaPDFBase64 = await gerarFichaPDFBase64(
+		idLocal,
         f, 
         state.materiais, 
         state.fotos, 
@@ -1277,7 +1278,8 @@ async function salvarFormularioLocal() {
     console.log('✅ PDFs gerados');
 
     const registro = {
-        id: id, 
+        idLocal: idLocal,
+		idServidor: null,
         createdAt: new Date().toISOString(),
         cliente: f.cliente || '',
         servico: f.servico || '',
@@ -1547,7 +1549,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=008')
+                navigator.serviceWorker.register('./sw.js?v=010')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
@@ -1635,7 +1637,7 @@ function formatDate(dateString) {
 
 // ======== FICHA DE MANUTENÇÃO ========
 // Versão modificada que retorna Base64 ao invés de fazer download
-async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas) {
+async function gerarFichaPDFBase64(idLocal, formData, materiais, fotos, assinaturas) {
     const { jsPDF } = window.jspdf;
     
 	const doc = new jsPDF({
@@ -1651,6 +1653,16 @@ async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas) {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     let y = 20;
+
+	doc.setTextColor(255, 255, 255);
+	doc.setFontSize(9);
+	doc.setFont('helvetica', 'bold');
+	doc.text(
+	    `Nº: ${idLocal}`,
+	    pageWidth - 10,
+	    11,
+	    { align: 'right' }
+	);
 
     // Logo e cabeçalho
     doc.setFillColor(0, 82, 163);
