@@ -6,7 +6,7 @@
 importScripts('https://cdn.jsdelivr.net/npm/idb@8/build/umd.js');
 
 // Nome do cache — altere ao atualizar
-const CACHE_NAME = 'formulario-cache-v010';
+const CACHE_NAME = 'formulario-cache-v011';
 
 // Arquivos ESSENCIAIS (mínimos)
 const CORE_ASSETS = [
@@ -151,8 +151,31 @@ async function sincronizarPendentes() {
         const payload = {
             json_dados: {
                 id: form.id,
-                fichaPDF: form.fichaPDF || null,
-                relatorioPDF: form.relatorioPDF || null,
+                cliente: form.cliente,
+                cidade: form.cidade,
+                equipamento: form.equipamento,
+                tecnico: form.tecnico,
+                servico: form.servico,
+        
+                dataInicial: form.dataInicial,
+                horaInicial: form.horaInicial,
+                dataFinal: form.dataFinal,
+                horaFinal: form.horaFinal,
+        
+                veiculo: form.veiculo,
+                estoque: form.estoque,
+                numeroSerie: form.numeroSerie,
+        
+                relatorioMaquina: form.relatorioMaquina,
+        
+                fotos: form.fotos,
+                assinaturas: form.assinaturas,
+        
+                clienteNome: form.clienteNome,
+                tecnicoNome: form.tecnicoNome,
+        
+                materiais: form.materiais,
+        
                 chaveUnica: form.chaveUnica
             },
             chave: form.chaveUnica
@@ -165,19 +188,13 @@ async function sincronizarPendentes() {
         });
 
         if (response.ok) {
-    const data = await response.json(); 
-    // esperado: { id: 108 }
-
-    form.idServidor = data.id;        // 👈 ESTA É A MUDANÇA
-    form.sincronizado = true;
-    form.syncedAt = new Date().toISOString();
-
-    await db.put('formularios', form);
-
-    console.log(`✅ Formulário local ${form.id} sincronizado como OS ${data.id}`);
-} else {
-    console.warn(`⚠️ Falha ao sincronizar ${form.id}`);
-}
+            form.sincronizado = true;
+            form.syncedAt = new Date().toISOString();
+            await db.put('formularios', form);
+            console.log(`✅ Formulário ${form.id} sincronizado`);
+        } else {
+            console.warn(`⚠️ Falha ao sincronizar ${form.id}`);
+        }
 
         // ⛔ IMPORTANTE: NÃO continua loop
         // A próxima sincronização será OUTRA chamada
