@@ -1534,48 +1534,57 @@ async function compartilharFormulario(id) {
             return;
         }
 
-        // 1. Obtenha os Blobs (Garanta que são Blobs e não strings Base64)
-        let fichaRes = await gerarFichaPDFBase64(form, form.materiais, form.fotos, form.assinaturas, form.serverId);
-        let relatorioRes = await gerarRelatorioPDFBase64(form, form.materiais, form.fotos, form.assinaturas, form.serverId);
+        // 🔹 Gerar PDFs (retornam Blob)
+        const fichaBlob = await gerarFichaPDFBase64(
+            form,
+            form.materiais,
+            form.fotos,
+            form.assinaturas,
+            form.serverId
+        );
 
-        // Se o jspdf estiver retornando datauristring, converta para blob
-        const blob1 = (typeof fichaRes === 'string') ? base64ToBlob(fichaRes, 'application/pdf') : fichaRes;
-        const blob2 = (typeof relatorioRes === 'string') ? base64ToBlob(relatorioRes, 'application/pdf') : relatorioRes;
+        const relatorioBlob = await gerarRelatorioPDFBase64(
+            form,
+            form.materiais,
+            form.fotos,
+            form.assinaturas,
+            form.serverId
+        );
 
-        const filesArray = [
-            new File([blob1], `Ficha_${form.serverId}.pdf`, { type: 'application/pdf', lastModified: Date.now() }),
-            new File([blob2], `Relatorio_${form.serverId}.pdf`, { type: 'application/pdf', lastModified: Date.now() })
-        ];
+        // 🔹 Converter Blob → File (OBRIGATÓRIO para Web Share)
+        const fichaFile = new File(
+            [fichaBlob],
+            `Ficha_${form.serverId}.pdf`,
+            { type: 'application/pdf' }
+        );
 
-        // 2. Verificação Robusta
-        if (navigator.canShare && navigator.canShare({ files: filesArray })) {
+        const relatorioFile = new File(
+            [relatorioBlob],
+            `Relatorio_${form.serverId}.pdf`,
+            { type: 'application/pdf' }
+        );
+
+        // 🔹 Compartilhar
+        if (
+            navigator.canShare &&
+            navigator.canShare({ files: [fichaFile, relatorioFile] })
+        ) {
             await navigator.share({
-                files: filesArray,
-                // Remova o texto temporariamente se o erro persistir, 
-                // alguns aparelhos lidam mal com texto + múltiplos arquivos
-                text: `Relatórios do Serviço ${form.serverId}`,
+                title: `Serviço ${form.serverId}`,
+                text: `Relatório de serviço\nID: ${form.serverId}`,
+                files: [fichaFile, relatorioFile]
             });
         } else {
-            // Se não puder compartilhar, a única solução web é baixar os arquivos
-            showNotification('Seu navegador não suporta compartilhamento de arquivos. Baixando PDFs...', 'warning');
-            downloadBlob(blob1, `Ficha_${form.serverId}.pdf`);
-            downloadBlob(blob2, `Relatorio_${form.serverId}.pdf`);
+            const msg = encodeURIComponent(
+                `Relatório de serviço\nID: ${form.serverId}`
+            );
+            window.open(`https://wa.me/?text=${msg}`, '_blank');
         }
 
     } catch (e) {
-        console.error('Erro detalhado:', e);
-        showNotification('Erro ao compartilhar: ' + e.message, 'error');
+        console.error('Erro ao compartilhar:', e);
+        showNotification('Erro ao compartilhar', 'error');
     }
-}
-
-// Auxiliar para garantir o download se o share falhar
-function downloadBlob(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(url);
 }
 
 
@@ -1636,7 +1645,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=018')
+                navigator.serviceWorker.register('./sw.js?v=019')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
