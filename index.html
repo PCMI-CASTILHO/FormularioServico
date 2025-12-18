@@ -1534,8 +1534,8 @@ async function compartilharFormulario(id) {
             return;
         }
 
-        // 🔹 Gerar PDFs COM ID
-        const fichaPDF = await gerarFichaPDFBase64(
+        // 🔹 Gerar PDFs (retornam Blob)
+        const fichaBlob = await gerarFichaPDFBase64(
             form,
             form.materiais,
             form.fotos,
@@ -1543,7 +1543,7 @@ async function compartilharFormulario(id) {
             form.serverId
         );
 
-        const relatorioPDF = await gerarRelatorioPDFBase64(
+        const relatorioBlob = await gerarRelatorioPDFBase64(
             form,
             form.materiais,
             form.fotos,
@@ -1551,15 +1551,33 @@ async function compartilharFormulario(id) {
             form.serverId
         );
 
-        // 🔹 Compartilhar direto
-        if (navigator.canShare && navigator.canShare({ files: [fichaPDF, relatorioPDF] })) {
+        // 🔹 Converter Blob → File (OBRIGATÓRIO para Web Share)
+        const fichaFile = new File(
+            [fichaBlob],
+            `Ficha_${form.serverId}.pdf`,
+            { type: 'application/pdf' }
+        );
+
+        const relatorioFile = new File(
+            [relatorioBlob],
+            `Relatorio_${form.serverId}.pdf`,
+            { type: 'application/pdf' }
+        );
+
+        // 🔹 Compartilhar
+        if (
+            navigator.canShare &&
+            navigator.canShare({ files: [fichaFile, relatorioFile] })
+        ) {
             await navigator.share({
                 title: `Serviço ${form.serverId}`,
                 text: `Relatório de serviço\nID: ${form.serverId}`,
-                files: [fichaPDF, relatorioPDF]
+                files: [fichaFile, relatorioFile]
             });
         } else {
-            const msg = encodeURIComponent(`Relatório de serviço\nID: ${form.serverId}`);
+            const msg = encodeURIComponent(
+                `Relatório de serviço\nID: ${form.serverId}`
+            );
             window.open(`https://wa.me/?text=${msg}`, '_blank');
         }
 
@@ -1568,6 +1586,7 @@ async function compartilharFormulario(id) {
         showNotification('Erro ao compartilhar', 'error');
     }
 }
+
 
 // Helper: desenha um dataURL em um canvas mantendo proporção
 function drawDataUrlOnCanvas(dataUrl, canvas, ctx) {
@@ -1626,7 +1645,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=015')
+                navigator.serviceWorker.register('./sw.js?v=016')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
