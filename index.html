@@ -16,6 +16,7 @@
 	<!-- jsPDF e AutoTable -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 	
 	<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
@@ -1645,7 +1646,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=019')
+                navigator.serviceWorker.register('./sw.js?v=020')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
@@ -1912,7 +1913,7 @@ async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, serv
 	doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
 	doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
     
-    doc.save('Ficha_Manutencao.pdf');
+    return doc.output('blob');
 }
 
 // Versão modificada do Relatório que retorna Base64
@@ -2171,7 +2172,7 @@ async function gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas, 
 	doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
 	doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
     
-    doc.save('Relatorio_Servico.pdf');
+    return doc.output('blob');
 }
 
 // ======== FUNÇÃO AUXILIAR PARA CARREGAR IMAGEM ========
