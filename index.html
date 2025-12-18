@@ -1645,7 +1645,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=016')
+                navigator.serviceWorker.register('./sw.js?v=017')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
@@ -1750,19 +1750,19 @@ async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, serv
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // ✅ ID NO CABEÇALHO
-    if (serverId) {
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
-        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
-    }
-
     const logo = await carregarImagem("Logo.png");
     let y = 20;
 
     // Logo e cabeçalho
     doc.setFillColor(0, 82, 163);
     doc.rect(0, 0, pageWidth, 17, 'F');
+
+	// ✅ ID NO CABEÇALHO
+    if (serverId) {
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
+    }
     
     if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
     
@@ -1933,19 +1933,19 @@ async function gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas, 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // ✅ ID NO CABEÇALHO
-    if (serverId) {
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
-        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
-    }
-
     const logo = await carregarImagem("Logo.png");
     let y = 20;
 
     // Logo e cabeçalho
     doc.setFillColor(0, 82, 163);
     doc.rect(0, 0, pageWidth, 17, 'F');
+
+	    // ✅ ID NO CABEÇALHO
+    if (serverId) {
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
+    }
     
     if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
     
