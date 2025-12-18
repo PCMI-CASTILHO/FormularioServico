@@ -1461,7 +1461,7 @@ async function carregarFormularioLocal(id) {
             return;
         }
 
-        const f = registro.formData || {};
+        const f = registro;
 
         // 1. Preencher campos usando o mapa (LÓGICA MANTIDA)
         for (const key in FIELD_ID_MAP) {
@@ -1646,7 +1646,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=020')
+                navigator.serviceWorker.register('./sw.js?v=022')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
