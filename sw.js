@@ -6,7 +6,7 @@
 importScripts('https://cdn.jsdelivr.net/npm/idb@8/build/umd.js');
 
 // Nome do cache — altere ao atualizar
-const CACHE_NAME = 'formulario-cache-v013';
+const CACHE_NAME = 'formulario-cache-v014';
 
 // Arquivos ESSENCIAIS (mínimos)
 const CORE_ASSETS = [
@@ -188,16 +188,19 @@ async function sincronizarPendentes() {
         });
 
         if (response.ok) {
-            const text = await response.text();
-            console.log('📩 Retorno do servidor:', text);
+            const data = await response.json(); // 👈 AGORA SIM
         
             form.sincronizado = true;
             form.syncedAt = new Date().toISOString();
-            form.serverId = data.id; // 👈 SALVA O ID DO SERVIDOR
+        
+            // ✅ ID REAL GERADO NO BANCO
+            form.serverId = data.insertId;
         
             await db.put('formularios', form);
         
-            console.log(`✅ Formulário ${form.id} sincronizado (serverId: ${data.id})`);
+            console.log(
+                `✅ Formulário ${form.id} sincronizado (serverId: ${data.insertId})`
+            );
         } else {
             console.warn(`⚠️ Falha ao sincronizar ${form.id}`);
         }
