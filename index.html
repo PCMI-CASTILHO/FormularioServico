@@ -1626,7 +1626,7 @@ async function startApp() {
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=014')
+                navigator.serviceWorker.register('./sw.js?v=015')
                     .then(reg => {
                         console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
                     })
@@ -1716,25 +1716,29 @@ function formatDate(dateString) {
 // Versão modificada que retorna Base64 ao invés de fazer download
 async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, serverId = null) {
     const { jsPDF } = window.jspdf;
-    
-	const doc = new jsPDF({
-	    orientation: 'p',
-	    unit: 'mm',
-	    format: 'a4',
-	    compress: true,          // funciona em versões mais antigas
-	    compression: 'MEDIUM',   // funciona nas versões novas
-	    putOnlyUsedFonts: true,
-	    floatPrecision: 2
-	});
-	
-	if (serverId) {
-	    doc.setFontSize(9);
-	    doc.setTextColor(255, 255, 255);
-	    doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
-	}
-    const logo = await carregarImagem("Logo.png");
+
+    const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
+        compression: 'MEDIUM',
+        putOnlyUsedFonts: true,
+        floatPrecision: 2
+    });
+
+    // ✅ DECLARE ANTES DE USAR
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+
+    // ✅ ID NO CABEÇALHO
+    if (serverId) {
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
+    }
+
+    const logo = await carregarImagem("Logo.png");
     let y = 20;
 
     // Logo e cabeçalho
@@ -1895,26 +1899,29 @@ async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, serv
 // Versão modificada do Relatório que retorna Base64
 async function gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas, serverId = null) {
     const { jsPDF } = window.jspdf;
-    
-	const doc = new jsPDF({
-	    orientation: 'p',
-	    unit: 'mm',
-	    format: 'a4',
-	    compress: true,          // funciona em versões mais antigas
-	    compression: 'MEDIUM',   // funciona nas versões novas
-	    putOnlyUsedFonts: true,
-	    floatPrecision: 2
-	});
 
-	if (serverId) {
-	    doc.setFontSize(9);
-	    doc.setTextColor(255, 255, 255);
-	    doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
-	}
-	
-    const logo = await carregarImagem("Logo.png");
+    const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
+        compression: 'MEDIUM',
+        putOnlyUsedFonts: true,
+        floatPrecision: 2
+    });
+
+    // ✅ DECLARE ANTES DE USAR
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+
+    // ✅ ID NO CABEÇALHO
+    if (serverId) {
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
+    }
+
+    const logo = await carregarImagem("Logo.png");
     let y = 20;
 
     // Logo e cabeçalho
