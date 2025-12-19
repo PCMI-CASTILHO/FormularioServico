@@ -2,31 +2,53 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+	
+	<!-- Viewport para responsividade em dispositivos móveis -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Manifesto para Progressive Web App (PWA) -->
     <link rel="manifest" href="manifest.json">
+	
+	<!-- Cor do tema para navegadores mobile -->
     <meta name="theme-color" content="#3b82f6">
+	
+	<!-- Habilita modo standalone em navegadores Android -->
     <meta name="mobile-web-app-capable" content="yes">
+	
+	<!-- Configurações para iOS (status bar e título do app) -->
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Formulário Serviço">
+	
     <title>Formulário de Serviço</title>
+	
+	<!-- Framework CSS utilitário -->
     <script src="https://cdn.tailwindcss.com"></script>
+	
+	<!-- Ícones FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	
+	<!-- Manifesto para Progressive Web App (PWA) -->
 	<link rel="manifest" href="./manifest.json">
+	
+	<!-- Cor do tema alternativa -->
 	<meta name="theme-color" content="#1f2937">
+	
 	<!-- jsPDF e AutoTable -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 	
+	<!-- IndexedDB wrapper para armazenamento offline -->
 	<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
+	<!-- Registro do Service Worker para funcionalidades offline -->
 	<script>
 	if ("serviceWorker" in navigator) {
 		navigator.serviceWorker.register("./sw.js");
 	}
 	</script>
 
-    <style>
+    <!-- Estilos CSS personalizados -->
+	<style>
         :root {
             --primary: #3b82f6;
             --secondary: #1e40af;
@@ -157,6 +179,7 @@
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
+	<!-- Header com navegação e controles principais -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center">
@@ -165,41 +188,50 @@
                 </div>
                 <h1 class="text-xl font-bold text-gray-800">Formulário de Serviço</h1>
             </div>
-<div class="flex items-center space-x-4">
-    <div id="status" class="flex items-center text-sm">
-        <span id="status-indicator" class="status-indicator status-offline"></span>
-        <span id="status-text">Offline</span>
-    </div>
-    <!-- Botão de Sincronização - NOVO -->
-    <button id="sync-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center relative">
-        <i class="fas fa-sync-alt mr-2"></i> Sincronizar
-        <span id="sync-badge" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center hidden">0</span>
-    </button>
-    <button id="export-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center">
-        <i class="fas fa-download mr-2"></i> Salvar
-    </button>
-</div>
+			<div class="flex items-center space-x-4">
+				<!-- Indicador de status de conexão -->
+				<div id="status" class="flex items-center text-sm">
+					<span id="status-indicator" class="status-indicator status-offline"></span>
+					<span id="status-text">Offline</span>
+				</div>
+				<!-- Botão de sincronização de dados offline -->
+				<button id="sync-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center relative">
+					<i class="fas fa-sync-alt mr-2"></i> Sincronizar
+					<!-- Badge para mostrar pendências -->
+					<span id="sync-badge" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center hidden">0</span>
+				</button>
+				<!-- Botão de exportação de dados -->
+				<button id="export-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center">
+					<i class="fas fa-download mr-2"></i> Salvar
+				</button>
+			</div>
         </div>
     </header>
-
+	
+	<!-- Conteúdo principal do formulário -->
     <main class="container mx-auto px-4 py-6">
+		<!-- Seção 1: Dados do serviço -->
         <section class="form-section">
             <h2 class="text-xl font-semibold flex items-center">
                 <i class="fas fa-clipboard-list text-blue-600 mr-2"></i> Dados do Serviço
             </h2>
             
+			<!-- Grid responsivo para campos de entrada -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
+					<!-- Campo: Cliente (obrigatório) -->
                     <div>
                         <label for="cliente" class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
                         <input type="text" id="cliente" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     
+					<!-- Campo: Localização (obrigatório) -->
                     <div>
                         <label for="cidade" class="block text-sm font-medium text-gray-700 mb-1">Cidade - UF *</label>
                         <input type="text" id="cidade" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     
+					<!-- Campo: Equipamento com seleção dinâmica -->
                     <div>
                         <label for="equipamento" class="block text-sm font-medium text-gray-700 mb-1">Equipamento *</label>
                         <select id="equipamento" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
@@ -218,14 +250,17 @@
                             <option value="CS-R">CS-R</option>
                             <option value="OUTRO">OUTRO</option>
                         </select>
+						<!-- Campo condicional para "OUTRO" -->
                         <input type="text" id="equipamento-outro" placeholder="Especifique o equipamento" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
                     </div>
                     
+					<!-- Campo: Técnico -->
                     <div>
                         <label for="tecnico" class="block text-sm font-medium text-gray-700 mb-1">Técnico *</label>
                         <input type="text" id="tecnico" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     
+					<!-- Campo: Tipo de serviço prestado -->
                     <div>
                         <label for="servico" class="block text-sm font-medium text-gray-700 mb-1">Serviço Prestado *</label>
                         <select id="servico" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
@@ -237,7 +272,9 @@
                     </div>
                 </div>
                 
+				<!-- Segunda coluna de campos -->
                 <div class="space-y-4">
+					<!-- Grid para data e hora inicial -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label for="data-inicial" class="block text-sm font-medium text-gray-700 mb-1">Data Inicial *</label>
@@ -249,6 +286,7 @@
                         </div>
                     </div>
                     
+					<!-- Grid para data e hora final -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label for="data-final" class="block text-sm font-medium text-gray-700 mb-1">Data Final *</label>
@@ -260,11 +298,13 @@
                         </div>
                     </div>
                     
+					<!-- Campo: Identificação do veículo -->
                     <div>
                         <label for="veiculo" class="block text-sm font-medium text-gray-700 mb-1">Veículo</label>
                         <input type="text" id="veiculo" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     
+					<!-- Campo: Controle de estoque -->
                     <div>
                         <label for="estoque" class="block text-sm font-medium text-gray-700 mb-1">Estoque</label>
                         <select id="estoque" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
@@ -289,6 +329,7 @@
                         </select>
                     </div>
                     
+					<!-- Campo: Número de série do equipamento -->
                     <div>
                         <label for="numero-serie" class="block text-sm font-medium text-gray-700 mb-1">Nº de Série</label>
                         <input type="text" id="numero-serie" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="####/ano">
@@ -296,23 +337,27 @@
                 </div>
             </div>
         </section>
-
+		
+		<!-- Seção 2: Relatório técnico -->
         <section class="form-section">
             <h2 class="text-xl font-semibold flex items-center">
                 <i class="fas fa-file-alt text-blue-600 mr-2"></i> Relatório da Máquina
             </h2>
             
+			<!-- Textarea para descrição detalhada -->
             <div>
                 <label for="relatorio-maquina" class="block text-sm font-medium text-gray-700 mb-1">Defeitos Encontrados e Solução *</label>
                 <textarea id="relatorio-maquina" rows="5" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Descreva os defeitos encontrados e as soluções aplicadas..."></textarea>
             </div>
         </section>
-
+		
+		<!-- Seção 3: Documentação fotográfica -->
         <section class="form-section">
             <h2 class="text-xl font-semibold flex items-center">
                 <i class="fas fa-camera text-blue-600 mr-2"></i> Fotos da Máquina
             </h2>
             
+			<!-- Controle de upload de imagens -->
             <div class="mb-4">
                 <input type="file" id="fotos-input" accept="image/*" multiple class="hidden">
                 <button id="add-fotos-btn" class="btn-secondary px-4 py-2 rounded-lg flex items-center">
@@ -321,16 +366,20 @@
                 <p class="text-sm text-gray-500 mt-1">Máximo de 10 fotos</p>
             </div>
             
+			<!-- Grid para preview das imagens -->
             <div id="fotos-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             </div>
         </section>
-
+		
+		<!-- Seção 4: Assinaturas digitais -->
         <section class="form-section">
             <h2 class="text-xl font-semibold flex items-center">
                 <i class="fas fa-signature text-blue-600 mr-2"></i> Assinaturas
             </h2>
             
+			<!-- Grid para assinaturas do cliente e técnico -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<!-- Canvas para assinatura do cliente -->
                 <div>
                     <h3 class="text-lg font-medium text-gray-700 mb-2">Assinatura do Cliente *</h3>
                     <div class="mb-2">
@@ -347,6 +396,7 @@
                     </button>
                 </div>
                 
+				<!-- Canvas para assinatura do técnico -->
                 <div>
                     <h3 class="text-lg font-medium text-gray-700 mb-2">Assinatura do Técnico *</h3>
                     <div class="mb-2">
@@ -360,16 +410,20 @@
                 </div>
             </div>
         </section>
-
+		
+		<!-- Seção 5: Controle de materiais utilizados -->
         <section class="form-section">
             <h2 class="text-xl font-semibold flex items-center">
                 <i class="fas fa-boxes text-blue-600 mr-2"></i> Materiais Utilizados
             </h2>
             
+			<!-- Interface para adição de materiais -->
             <div class="mb-4">
                 <div class="flex space-x-2">
+					<!-- Input com autocomplete de materiais -->
                     <input type="text" id="material-input" list="materiais-list" placeholder="Digite código ou nome do material" class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     <datalist id="materiais-list"></datalist>
+					<!-- Input para quantidade -->
                     <input type="number" id="material-qtd" min="1" placeholder="Qtd" class="w-24 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     <button id="add-material-btn" class="btn-primary px-4 py-2 rounded-lg">
                         <i class="fas fa-plus mr-1"></i> Adicionar
@@ -377,370 +431,400 @@
                 </div>
             </div>
             
+			<!-- Lista de materiais adicionados -->
             <div id="materiais-lista" class="space-y-2">
             </div>
         </section>
     </main>
-
+	
+	<!-- Modal para visualização ampliada de imagens -->
     <div id="image-modal" class="modal">
         <span class="modal-close">&times;</span>
         <img class="modal-content" id="modal-image">
     </div>
 
+	<!-- Componente de notificação toast -->
     <div id="notification" class="notification hidden">
         <div class="flex items-center">
             <i id="notification-icon" class="mr-2"></i>
             <span id="notification-text"></span>
         </div>
     </div>
-
+	
+	 <!-- Script principal da aplicação -->
     <script>
-        // Dados do estoque
-const estoqueData = [
-    { codigo: '9318', material: 'ABRAÇADEIRA NYLON 100MMX2,5MM' },
-    { codigo: '3296', material: 'ABRAÇADEIRA NYLON 4,6MMX200MM' },
-    { codigo: '12525', material: 'ABRAÇADEIRA DAS GAVETAS SEQ' },
-    { codigo: '11292', material: 'ABRAÇADEIRAA COLETA SOLO' },
-    { codigo: '9763', material: 'ARRUELA LISA 1/2 GVZ' },
-    { codigo: '9320', material: 'ARRUELA LISA 1/4 INOX' },
-    { codigo: '9472', material: 'ARRUELA LISA M4 INOX' },
-    { codigo: '9619', material: 'BARRA DE PINOS 1X40 VIAS 11,2MM 180ş' },
-    { codigo: '9617', material: 'BARRA DE PINOS 1X40 VIAS 14,5MM 90ş' },
-    { codigo: '9970', material: 'BARRA DE PINOS 1X40 VIAS 17MM 90ş' },
-    { codigo: '9607', material: 'BARRA ROSCADA M4 INOX' },
-    { codigo: '7207', material: 'BATERIA 12VCC 7A' },
-    { codigo: '3592', material: 'BATERIA 12VCC 1,3A' },
-    { codigo: '10822', material: 'BATERIA 5VCC' },
-    { codigo: '9447', material: 'BOBINA 220V' },
-    { codigo: '9605', material: 'BLOCO DE CONTATO NO' },
-    { codigo: '9425', material: 'BLOCO DE CONTATO NF' },
-    { codigo: '10536', material: 'BORRACHA DE VEDAÇÃO' },
-    { codigo: '11272', material: 'BORNE SACK FUSIVEL' },
-    { codigo: '9423', material: 'BORNE SACK BEGE' },
-    { codigo: '12485', material: 'BORNE SACK AZUL' },
-    { codigo: '9399', material: 'BOTÃO DE PULSO' },
-    { codigo: '9415', material: 'BOTÃO DE EMERGÊNCIA' },
-    { codigo: '2454', material: 'BUCHA M8' },
-    { codigo: '9964', material: 'BUCHA METALICA MACHO 1/4' },
-    { codigo: '11597', material: 'BUCHA METALICA MACHO 1/8' },
-    { codigo: '4002', material: 'CABO DE ALIMENTAÇÃO 2,5MM TRIPOLAR' },
-    { codigo: '9478', material: 'CABO AWG 4X' },
-    { codigo: '10570', material: 'CABO DE AÇO 1/8 GALV 3.2' },
-    { codigo: '10051', material: 'CABO FLAT COLORIDO 20 VIAS' },
-    { codigo: '9871', material: 'CABO DE COMANDO 1X0,5MM AZUL' },
-    { codigo: '10541', material: 'CABO FLEX 1,5MM VERDE' },
-    { codigo: '9875', material: 'CABO VERMELHO 1X0,5MM' },
-    { codigo: '9873', material: 'CABO PRETO 1X0,5MM' },
-    { codigo: '10551', material: 'CABO PP 3X0,5MM' },
-    { codigo: '2642', material: 'CABO PP 2X1MM' },
-    { codigo: '10550', material: 'CABO PP 2X0,5MM' },
-    { codigo: '6662', material: 'CABO USB CONTROLADOR' },
-    { codigo: '9849', material: 'CABO DE REDE' },
-    { codigo: '10654', material: 'CASE DO RASPBERRY' },
-    { codigo: '8257', material: 'CAIXA DE INTERLIGAÇÃO SENSORES MAX E MIN' },
-    { codigo: '8249', material: 'CAIXA DE INTERLIGAÇÃO DAS CÉLULAS' },
-    { codigo: '9467', material: 'CAIXA OPACA 190X140X70' },
-    { codigo: '9400', material: 'CAIXA BX01 - 1 FURO 76X70X60' },
-    { codigo: '9401', material: 'CAIXA BX02 - 2 FURO' },
-    { codigo: '11602', material: 'KIT CAMERA MAIX BIT' },
-    { codigo: '9962', material: 'CAPACITOR POLIESTER 100K 63V' },
-    { codigo: '9271', material: 'CAPACITOR 47NF 400V' },
-    { codigo: '1106', material: 'CARREGADOR 12VCC 0,8A' },
-    { codigo: '12010', material: 'FONTE DE PAREDE 5 VCC 1A' },
-    { codigo: '9212', material: 'FONTE 12VCC 2A DE PAREDE' },
-    { codigo: '9444', material: 'FONTE NOBREAK FULL' },
-    { codigo: '9844', material: 'CARTÃO SD' },
-    { codigo: '12658', material: 'CÉLULA 20 KG' },
-    { codigo: '8750', material: 'CÉLULA DE CARGA BSPH10 100KG' },
-    { codigo: '9476', material: 'CÉLULA DE CARGA Z 500KG' },
-    { codigo: '9693', material: 'CÉLULA DE CARGA Z 100KG' },
-    { codigo: '9330', material: 'CÉLULA DE CARGA Z 50KG' },
-    { codigo: '6743', material: 'CHAPA DE PROTEÇÃO DO CARTÃO' },
-    { codigo: '9885', material: 'CHAPINHA DE Nº DE SÉRIE' },
-    { codigo: '9876', material: 'CHAVE ALAVANCA LD' },
-    { codigo: '9397', material: 'CHAVE LDL' },
-    { codigo: '10569', material: 'CLIP PARA CABO DE AÇO 1/8 - 3,2' },
-    { codigo: '5670', material: 'CONTATOR 12 A 220VAC' },
-    { codigo: '9402', material: 'CHAVE SELETORA XB2 2 POSIÇÕES' },
-    { codigo: '9636', material: 'CONECTOR MIKE FEMEA 4 PINOS' },
-    { codigo: '9281', material: 'CONECTOR MIKE MACHO 4 PINOS' },
-    { codigo: '8837', material: 'CONEXAO RETA 1/4XM4' },
-    { codigo: '8826', material: 'CONEXAO RETA 1/4XM6' },
-    { codigo: '3882', material: 'CONEXÃO RETA 1/8XM4' },
-    { codigo: '10012', material: 'CONEXÃO RETA LATÃO' },
-    { codigo: '8836', material: 'CONEXAO UNIÃO RETA 8MM' },
-    { codigo: '8812', material: 'CONJUNTO LUBRIFIL MINI 1/4' },
-    { codigo: '10580', material: 'FONTE HI-LINK 12V' },
-    { codigo: '11812', material: 'FONTE HI-LINK 5V' },
-    { codigo: '10828', material: 'CONECTOR MICRO USB PS/SEL WIFI' },
-    { codigo: '9633', material: 'CORDA NATURAL BRANCA 4MM' },
-    { codigo: '10655', material: 'COOLER PARA RASPBERRY' },
-    { codigo: '9609', material: 'CORRENTE DE AÇO' },
-    { codigo: '9690', material: 'DIODO 1N4007' },
-    { codigo: '9845', material: 'ENGATE RAPIDO 1/4 MACHO' },
-    { codigo: '9842', material: 'ENGATE RAPIDO 1/4 FEMÊA' },
-    { codigo: '9260', material: 'ESPAÇADOR NYLON GRANDE 7X3X10' },
-    { codigo: '9263', material: 'ESPAÇADOR NYLON GRANDE 7X3X10' },
-    { codigo: '9373', material: 'ESPAÇADOR C/ ROSCA' },
-    { codigo: '9334', material: 'FUSIVEL 1A PEQUENO' },
-    { codigo: '9826', material: 'FUSIVEL 0,5A PEQUENO' },
-    { codigo: '9867', material: 'GERENCIADOR DO RASP PAINEL IHM' },
-    { codigo: '9258', material: 'ISOLADOR CHAPEU' },
-    { codigo: '12269', material: 'INDICADOR SELAVES WI-FI' },
-    { codigo: '3090', material: 'INDICADOR SP-501' },
-    { codigo: '12893', material: 'HUB' },
-    { codigo: '9694', material: 'KIT BOTÃO REGISTRA' },
-    { codigo: '8330', material: 'KIT DISTORCEDOR' },
-    { codigo: '5209', material: 'KIT ISOLADOR SISTEMA FIXO' },
-    { codigo: '10573', material: 'KIT ISOLADOR SISTEMA MOVEL' },
-    { codigo: '9396', material: 'MASCARA SP-300' },
-    { codigo: '11052', material: 'MASCARA DO TOUCH PAINEL IHM' },
-    { codigo: '9638', material: 'MICRO SD' },
-    { codigo: '9554', material: 'LED VERMELHO DIFUSO' },
-    { codigo: '13728', material: 'LED BICOLOR' },
-    { codigo: '9857', material: 'LUVA 1/4 METALICA SEXTAVADA' },
-    { codigo: '9856', material: 'MANGUEIRA PU6' },
-    { codigo: '9961', material: 'MANGUEIRA PU8' },
-    { codigo: '9379', material: 'MÓDULO RELÓGIO RASPBERRY' },
-    { codigo: '9542', material: 'MÓDULO RELÓGIO DO INDICADOR TRADICIONAL' },
-    { codigo: '4719', material: 'MÓDULO AD' },
-    { codigo: '9547', material: 'MÓDULO DE LEITOR SD' },
-    { codigo: '10825', material: 'MÓDULO DE LEITOR MICRO SD' },
-    { codigo: '9546', material: 'MÓDULO RELÉ 16 CANAIS' },
-    { codigo: '9481', material: 'MÓDULO RELÉ 4 CANAIS 12VCC' },
-    { codigo: '9387', material: 'MÓDULO DISPLAY LCD 2 LINHAS' },
-    { codigo: '10656', material: 'MONITOR TOUCH SCREEN' },
-    { codigo: '6560', material: 'MOSQUETÃO' },
-    { codigo: '9948', material: 'ÓLEO DE COMPRESSOR' },
-    { codigo: '3154', material: 'ÓLEO PNEUMATICO' },
-    { codigo: '9338', material: 'PARAFUSO PHILIPS 2,5X20' },
-    { codigo: '9342', material: 'PARAFUSO PHILIPS M4X12' },
-    { codigo: '9847', material: 'PARAFUSO OLIAL 6MM' },
-    { codigo: '9338', material: 'PARAFUSO PHILIPS 2,5X20MM INOX' },
-    { codigo: '9339', material: 'PARAFUSO PHILIPS CONICO 2,5X20MM INOX' },
-    { codigo: '10763', material: 'PF PHILIPS 3,5X9,5' },
-    { codigo: '10579', material: 'PARAFUSO PHILIPS M3X25MM INOX' },
-    { codigo: '9342', material: 'PARAFUSO PHILIPS M4X12MM INOX' },
-    { codigo: '9767', material: 'PARAFUSO SEXTAVADO M10X60 INOX' },
-    { codigo: '9768', material: 'PARAFUSO SEXTAVADO M6X16MM INOX' },
-    { codigo: '2767', material: 'PARAFUSO SEXTAVADO M8X55MM INOX' },
-    { codigo: '9483', material: 'PARAFUSO ALLEN ABAULADO M4X12MM' },
-    { codigo: '9769', material: 'PARAFUSO ALLEN CILINDRICO M4X20MM' },
-    { codigo: '9350', material: 'PARAFUSO ALLEN CILINDRICO M6X10MM' },
-    { codigo: '10549', material: 'PARAFUSO ALLEN CONICO M4X35MM' },
-    { codigo: '9734', material: 'PARAFUSO ALLEN CONICO M6X16MM' },
-    { codigo: '10117', material: 'PARAFUSO BROCANTE 5,5X25MM' },
-    { codigo: '10571', material: 'PARAFUSO SOBERBO SEXTAVADO 1/4X50MM' },
-    { codigo: '10572', material: 'PARAFUSO SEXTAVADO 1/4X3/4' },
-    { codigo: '9266', material: 'PARAFUSO NYLON FENDA' },
-    { codigo: '11852', material: 'PRESILHA COLETA SOLO' },
-    { codigo: '8816', material: 'PISTÃO 25X250MM' },
-    { codigo: '9965', material: 'PISTÃO MINI 16X60MM' },
-    { codigo: '9442', material: 'PISTÃO 25X125MM' },
-    { codigo: '1693', material: 'PISTÃO 25X150MM' },
-    { codigo: '6158', material: 'PILHA DO CLOCK' },
-    { codigo: '10041', material: 'PLACA LED MONTADA DO SEQ' },
-    { codigo: '3415', material: 'PLC DE CORTE SP-501' },
-    { codigo: '2818', material: 'PLC DE CORTE SP-300' },
-    { codigo: '9389', material: 'PLC CONTROLADOR MEGA' },
-    { codigo: '9458', material: 'PLC CONTROLADOR UNO' },
-    { codigo: '10790', material: 'CONTROLADOR ESP-32 PS/SEL WIFI' },
-    { codigo: '9882', material: 'PLC SEL-BOX 2.0' },
-    { codigo: '10790', material: 'CONTROLADOR WI-FI' },
-    { codigo: '12340', material: 'PLACA RASPBERRY' },
-    { codigo: '13214', material: 'PALCA CS MONTADA' },
-    { codigo: '8125', material: 'INDICADOR TRADICIONAL' },
-    { codigo: '7351', material: 'INDICADOR IHM' },
-    { codigo: '8127', material: 'ESCRAVO' },
-    { codigo: '9550', material: 'PLATAFORMA INFERIOR CÉLULA' },
-    { codigo: '3437', material: 'PLATAFORMA SUPERIOR CÉLULA' },
-    { codigo: '8814', material: 'PONTEIRA ANGULAR' },
-    { codigo: '8809', material: 'PONTEIRA ROTULAR' },
-    { codigo: '9781', material: 'PORCA M6 INOX' },
-    { codigo: '9359', material: 'PORLOCK M10 INOX' },
-    { codigo: '9360', material: 'PORLOCK M3' },
-    { codigo: '9784', material: 'PORCA 1/4' },
-    { codigo: '9361', material: 'PORLOCK M4' },
-    { codigo: '9362', material: 'PORLOCK M6' },
-    { codigo: '3256', material: 'PORLOCK M8' },
-    { codigo: '9363', material: 'PORCA 2,5 INOX' },
-    { codigo: '9779', material: 'PORCA HASTE DOS PISTÕES 25X125/150/250' },
-    { codigo: '9748', material: 'PORCA HASTE DOS PISTÕES MINI 16X80' },
-    { codigo: '9264', material: 'PORCA NYLON' },
-    { codigo: '9274', material: 'PORTA FUSIVEL' },
-    { codigo: '9549', material: 'PG 11' },
-    { codigo: '9364', material: 'PG7' },
-    { codigo: '9532', material: 'REGULADOR 12V P/ 5V' },
-    { codigo: '9112', material: 'REGULADOR 7812' },
-    { codigo: '9900', material: 'RELÉ ACOPLADOR 12V' },
-    { codigo: '11978', material: 'BASE DO RELÉ ACOPLADOR SLIM' },
-    { codigo: '11981', material: 'RELÉ ACOPLADOR SLIM 220V' },
-    { codigo: '10653', material: 'RELÉ TÉRMICO 1,6 - 2,5 A' },
-    { codigo: '4595', material: 'RELÉ TERMICO 4,0 - 6,3A' },
-    { codigo: '8829', material: 'REGULADOR DE FLUXO 6X1/8' },
-    { codigo: '9934', material: 'RESISTOR 10K2 1% 1/4W' },
-    { codigo: '9930', material: 'RJ45' },
-    { codigo: '11181', material: 'ROTEADOR TP-LINK' },
-    { codigo: '12206', material: 'SENSOR CAPACITIVO CA30' },
-    { codigo: '9494', material: 'SENSOR BANANA' },
-    { codigo: '8833', material: 'SILENCIADOR BRONZE 1/8' },
-    { codigo: '13213', material: 'SLAT COLETA SOLO' },
-    { codigo: '11648', material: 'SINALEIRO LED VERDE - 110/220V' },
-    { codigo: '9273', material: 'SINDAL 10 MM' },
-    { codigo: '10050', material: 'SINDAL 16 MM' },
-    { codigo: '9557', material: 'SUPORTE DO LED 5MM' },
-    { codigo: '9978', material: 'TECLADO BT' },
-    { codigo: '9836', material: 'TECLADO BD15-SD/PS' },
-    { codigo: '9859', material: 'TECLADO BD15-SD/SEL' },
-    { codigo: '9398', material: 'TECLADO BD15-SEL' },
-    { codigo: '9405', material: 'TECLADO SP-501 GRANDE' },
-    { codigo: '9404', material: 'TECLADO SP-501 PEQUENO' },
-    { codigo: '8895', material: 'TECLADO PS/SEL WIFI' },
-    { codigo: '9956', material: 'TECLADO SEQUENCIAL' },
-    { codigo: '9393', material: 'TERMINAL FEMEA TOTAL' },
-    { codigo: '9368', material: 'TERMINAL OLHAL AZUL' },
-    { codigo: '9368', material: 'TERMINAL OLHAL PEQUENO VERMELHO' },
-    { codigo: '10575', material: 'TERMINAL GARFO PEQUENO VERMELHO' },
-    { codigo: '9911', material: 'TERMINAL GARFO AZUL' },
-    { codigo: '9391', material: 'TERMINAL TUBULAR 0,75MM BRANCO' },
-    { codigo: '9431', material: 'TERMINAL TUBULAR 1MM VERMELHO' },
-    { codigo: '9432', material: 'TERMINAL TUBULAR 1,5 MM PRETO' },
-    { codigo: '9870', material: 'TERMINAL TUBULAR 1MM DUPLO VERMELHO' },
-    { codigo: '9983', material: 'T PU8' },
-    { codigo: '9984', material: 'ABRAÇADEIRA T PU8' },
-    { codigo: '9509', material: 'T MULTIPLO PU6' },
-    { codigo: '10022', material: 'TOMADA FEMEA' },
-    { codigo: '8820', material: 'VALVULA ESFERA 1/4' },
-    { codigo: '8822', material: 'VALVULA SOLENÓIDE 220V' },
-    { codigo: '8818', material: 'VALVULA SOLENÓIDE 12V' },
-    { codigo: '7212', material: 'ACRILICO DA BOBINA DA VALVULA' },
-    { codigo: '9747', material: 'PORCA PROT. BOTÃO REGISTRA' }
-];
+		// Dataset de materiais do estoque
+		// Estrutura: array de objetos com código e descrição
+		const estoqueData = [
+			{ codigo: '9318', material: 'ABRAÇADEIRA NYLON 100MMX2,5MM' },
+			{ codigo: '3296', material: 'ABRAÇADEIRA NYLON 4,6MMX200MM' },
+			{ codigo: '12525', material: 'ABRAÇADEIRA DAS GAVETAS SEQ' },
+			{ codigo: '11292', material: 'ABRAÇADEIRAA COLETA SOLO' },
+			{ codigo: '9763', material: 'ARRUELA LISA 1/2 GVZ' },
+			{ codigo: '9320', material: 'ARRUELA LISA 1/4 INOX' },
+			{ codigo: '9472', material: 'ARRUELA LISA M4 INOX' },
+			{ codigo: '9619', material: 'BARRA DE PINOS 1X40 VIAS 11,2MM 180ş' },
+			{ codigo: '9617', material: 'BARRA DE PINOS 1X40 VIAS 14,5MM 90ş' },
+			{ codigo: '9970', material: 'BARRA DE PINOS 1X40 VIAS 17MM 90ş' },
+			{ codigo: '9607', material: 'BARRA ROSCADA M4 INOX' },
+			{ codigo: '7207', material: 'BATERIA 12VCC 7A' },
+			{ codigo: '3592', material: 'BATERIA 12VCC 1,3A' },
+			{ codigo: '10822', material: 'BATERIA 5VCC' },
+			{ codigo: '9447', material: 'BOBINA 220V' },
+			{ codigo: '9605', material: 'BLOCO DE CONTATO NO' },
+			{ codigo: '9425', material: 'BLOCO DE CONTATO NF' },
+			{ codigo: '10536', material: 'BORRACHA DE VEDAÇÃO' },
+			{ codigo: '11272', material: 'BORNE SACK FUSIVEL' },
+			{ codigo: '9423', material: 'BORNE SACK BEGE' },
+			{ codigo: '12485', material: 'BORNE SACK AZUL' },
+			{ codigo: '9399', material: 'BOTÃO DE PULSO' },
+			{ codigo: '9415', material: 'BOTÃO DE EMERGÊNCIA' },
+			{ codigo: '2454', material: 'BUCHA M8' },
+			{ codigo: '9964', material: 'BUCHA METALICA MACHO 1/4' },
+			{ codigo: '11597', material: 'BUCHA METALICA MACHO 1/8' },
+			{ codigo: '4002', material: 'CABO DE ALIMENTAÇÃO 2,5MM TRIPOLAR' },
+			{ codigo: '9478', material: 'CABO AWG 4X' },
+			{ codigo: '10570', material: 'CABO DE AÇO 1/8 GALV 3.2' },
+			{ codigo: '10051', material: 'CABO FLAT COLORIDO 20 VIAS' },
+			{ codigo: '9871', material: 'CABO DE COMANDO 1X0,5MM AZUL' },
+			{ codigo: '10541', material: 'CABO FLEX 1,5MM VERDE' },
+			{ codigo: '9875', material: 'CABO VERMELHO 1X0,5MM' },
+			{ codigo: '9873', material: 'CABO PRETO 1X0,5MM' },
+			{ codigo: '10551', material: 'CABO PP 3X0,5MM' },
+			{ codigo: '2642', material: 'CABO PP 2X1MM' },
+			{ codigo: '10550', material: 'CABO PP 2X0,5MM' },
+			{ codigo: '6662', material: 'CABO USB CONTROLADOR' },
+			{ codigo: '9849', material: 'CABO DE REDE' },
+			{ codigo: '10654', material: 'CASE DO RASPBERRY' },
+			{ codigo: '8257', material: 'CAIXA DE INTERLIGAÇÃO SENSORES MAX E MIN' },
+			{ codigo: '8249', material: 'CAIXA DE INTERLIGAÇÃO DAS CÉLULAS' },
+			{ codigo: '9467', material: 'CAIXA OPACA 190X140X70' },
+			{ codigo: '9400', material: 'CAIXA BX01 - 1 FURO 76X70X60' },
+			{ codigo: '9401', material: 'CAIXA BX02 - 2 FURO' },
+			{ codigo: '11602', material: 'KIT CAMERA MAIX BIT' },
+			{ codigo: '9962', material: 'CAPACITOR POLIESTER 100K 63V' },
+			{ codigo: '9271', material: 'CAPACITOR 47NF 400V' },
+			{ codigo: '1106', material: 'CARREGADOR 12VCC 0,8A' },
+			{ codigo: '12010', material: 'FONTE DE PAREDE 5 VCC 1A' },
+			{ codigo: '9212', material: 'FONTE 12VCC 2A DE PAREDE' },
+			{ codigo: '9444', material: 'FONTE NOBREAK FULL' },
+			{ codigo: '9844', material: 'CARTÃO SD' },
+			{ codigo: '12658', material: 'CÉLULA 20 KG' },
+			{ codigo: '8750', material: 'CÉLULA DE CARGA BSPH10 100KG' },
+			{ codigo: '9476', material: 'CÉLULA DE CARGA Z 500KG' },
+			{ codigo: '9693', material: 'CÉLULA DE CARGA Z 100KG' },
+			{ codigo: '9330', material: 'CÉLULA DE CARGA Z 50KG' },
+			{ codigo: '6743', material: 'CHAPA DE PROTEÇÃO DO CARTÃO' },
+			{ codigo: '9885', material: 'CHAPINHA DE Nº DE SÉRIE' },
+			{ codigo: '9876', material: 'CHAVE ALAVANCA LD' },
+			{ codigo: '9397', material: 'CHAVE LDL' },
+			{ codigo: '10569', material: 'CLIP PARA CABO DE AÇO 1/8 - 3,2' },
+			{ codigo: '5670', material: 'CONTATOR 12 A 220VAC' },
+			{ codigo: '9402', material: 'CHAVE SELETORA XB2 2 POSIÇÕES' },
+			{ codigo: '9636', material: 'CONECTOR MIKE FEMEA 4 PINOS' },
+			{ codigo: '9281', material: 'CONECTOR MIKE MACHO 4 PINOS' },
+			{ codigo: '8837', material: 'CONEXAO RETA 1/4XM4' },
+			{ codigo: '8826', material: 'CONEXAO RETA 1/4XM6' },
+			{ codigo: '3882', material: 'CONEXÃO RETA 1/8XM4' },
+			{ codigo: '10012', material: 'CONEXÃO RETA LATÃO' },
+			{ codigo: '8836', material: 'CONEXAO UNIÃO RETA 8MM' },
+			{ codigo: '8812', material: 'CONJUNTO LUBRIFIL MINI 1/4' },
+			{ codigo: '10580', material: 'FONTE HI-LINK 12V' },
+			{ codigo: '11812', material: 'FONTE HI-LINK 5V' },
+			{ codigo: '10828', material: 'CONECTOR MICRO USB PS/SEL WIFI' },
+			{ codigo: '9633', material: 'CORDA NATURAL BRANCA 4MM' },
+			{ codigo: '10655', material: 'COOLER PARA RASPBERRY' },
+			{ codigo: '9609', material: 'CORRENTE DE AÇO' },
+			{ codigo: '9690', material: 'DIODO 1N4007' },
+			{ codigo: '9845', material: 'ENGATE RAPIDO 1/4 MACHO' },
+			{ codigo: '9842', material: 'ENGATE RAPIDO 1/4 FEMÊA' },
+			{ codigo: '9260', material: 'ESPAÇADOR NYLON GRANDE 7X3X10' },
+			{ codigo: '9263', material: 'ESPAÇADOR NYLON GRANDE 7X3X10' },
+			{ codigo: '9373', material: 'ESPAÇADOR C/ ROSCA' },
+			{ codigo: '9334', material: 'FUSIVEL 1A PEQUENO' },
+			{ codigo: '9826', material: 'FUSIVEL 0,5A PEQUENO' },
+			{ codigo: '9867', material: 'GERENCIADOR DO RASP PAINEL IHM' },
+			{ codigo: '9258', material: 'ISOLADOR CHAPEU' },
+			{ codigo: '12269', material: 'INDICADOR SELAVES WI-FI' },
+			{ codigo: '3090', material: 'INDICADOR SP-501' },
+			{ codigo: '12893', material: 'HUB' },
+			{ codigo: '9694', material: 'KIT BOTÃO REGISTRA' },
+			{ codigo: '8330', material: 'KIT DISTORCEDOR' },
+			{ codigo: '5209', material: 'KIT ISOLADOR SISTEMA FIXO' },
+			{ codigo: '10573', material: 'KIT ISOLADOR SISTEMA MOVEL' },
+			{ codigo: '9396', material: 'MASCARA SP-300' },
+			{ codigo: '11052', material: 'MASCARA DO TOUCH PAINEL IHM' },
+			{ codigo: '9638', material: 'MICRO SD' },
+			{ codigo: '9554', material: 'LED VERMELHO DIFUSO' },
+			{ codigo: '13728', material: 'LED BICOLOR' },
+			{ codigo: '9857', material: 'LUVA 1/4 METALICA SEXTAVADA' },
+			{ codigo: '9856', material: 'MANGUEIRA PU6' },
+			{ codigo: '9961', material: 'MANGUEIRA PU8' },
+			{ codigo: '9379', material: 'MÓDULO RELÓGIO RASPBERRY' },
+			{ codigo: '9542', material: 'MÓDULO RELÓGIO DO INDICADOR TRADICIONAL' },
+			{ codigo: '4719', material: 'MÓDULO AD' },
+			{ codigo: '9547', material: 'MÓDULO DE LEITOR SD' },
+			{ codigo: '10825', material: 'MÓDULO DE LEITOR MICRO SD' },
+			{ codigo: '9546', material: 'MÓDULO RELÉ 16 CANAIS' },
+			{ codigo: '9481', material: 'MÓDULO RELÉ 4 CANAIS 12VCC' },
+			{ codigo: '9387', material: 'MÓDULO DISPLAY LCD 2 LINHAS' },
+			{ codigo: '10656', material: 'MONITOR TOUCH SCREEN' },
+			{ codigo: '6560', material: 'MOSQUETÃO' },
+			{ codigo: '9948', material: 'ÓLEO DE COMPRESSOR' },
+			{ codigo: '3154', material: 'ÓLEO PNEUMATICO' },
+			{ codigo: '9338', material: 'PARAFUSO PHILIPS 2,5X20' },
+			{ codigo: '9342', material: 'PARAFUSO PHILIPS M4X12' },
+			{ codigo: '9847', material: 'PARAFUSO OLIAL 6MM' },
+			{ codigo: '9338', material: 'PARAFUSO PHILIPS 2,5X20MM INOX' },
+			{ codigo: '9339', material: 'PARAFUSO PHILIPS CONICO 2,5X20MM INOX' },
+			{ codigo: '10763', material: 'PF PHILIPS 3,5X9,5' },
+			{ codigo: '10579', material: 'PARAFUSO PHILIPS M3X25MM INOX' },
+			{ codigo: '9342', material: 'PARAFUSO PHILIPS M4X12MM INOX' },
+			{ codigo: '9767', material: 'PARAFUSO SEXTAVADO M10X60 INOX' },
+			{ codigo: '9768', material: 'PARAFUSO SEXTAVADO M6X16MM INOX' },
+			{ codigo: '2767', material: 'PARAFUSO SEXTAVADO M8X55MM INOX' },
+			{ codigo: '9483', material: 'PARAFUSO ALLEN ABAULADO M4X12MM' },
+			{ codigo: '9769', material: 'PARAFUSO ALLEN CILINDRICO M4X20MM' },
+			{ codigo: '9350', material: 'PARAFUSO ALLEN CILINDRICO M6X10MM' },
+			{ codigo: '10549', material: 'PARAFUSO ALLEN CONICO M4X35MM' },
+			{ codigo: '9734', material: 'PARAFUSO ALLEN CONICO M6X16MM' },
+			{ codigo: '10117', material: 'PARAFUSO BROCANTE 5,5X25MM' },
+			{ codigo: '10571', material: 'PARAFUSO SOBERBO SEXTAVADO 1/4X50MM' },
+			{ codigo: '10572', material: 'PARAFUSO SEXTAVADO 1/4X3/4' },
+			{ codigo: '9266', material: 'PARAFUSO NYLON FENDA' },
+			{ codigo: '11852', material: 'PRESILHA COLETA SOLO' },
+			{ codigo: '8816', material: 'PISTÃO 25X250MM' },
+			{ codigo: '9965', material: 'PISTÃO MINI 16X60MM' },
+			{ codigo: '9442', material: 'PISTÃO 25X125MM' },
+			{ codigo: '1693', material: 'PISTÃO 25X150MM' },
+			{ codigo: '6158', material: 'PILHA DO CLOCK' },
+			{ codigo: '10041', material: 'PLACA LED MONTADA DO SEQ' },
+			{ codigo: '3415', material: 'PLC DE CORTE SP-501' },
+			{ codigo: '2818', material: 'PLC DE CORTE SP-300' },
+			{ codigo: '9389', material: 'PLC CONTROLADOR MEGA' },
+			{ codigo: '9458', material: 'PLC CONTROLADOR UNO' },
+			{ codigo: '10790', material: 'CONTROLADOR ESP-32 PS/SEL WIFI' },
+			{ codigo: '9882', material: 'PLC SEL-BOX 2.0' },
+			{ codigo: '10790', material: 'CONTROLADOR WI-FI' },
+			{ codigo: '12340', material: 'PLACA RASPBERRY' },
+			{ codigo: '13214', material: 'PALCA CS MONTADA' },
+			{ codigo: '8125', material: 'INDICADOR TRADICIONAL' },
+			{ codigo: '7351', material: 'INDICADOR IHM' },
+			{ codigo: '8127', material: 'ESCRAVO' },
+			{ codigo: '9550', material: 'PLATAFORMA INFERIOR CÉLULA' },
+			{ codigo: '3437', material: 'PLATAFORMA SUPERIOR CÉLULA' },
+			{ codigo: '8814', material: 'PONTEIRA ANGULAR' },
+			{ codigo: '8809', material: 'PONTEIRA ROTULAR' },
+			{ codigo: '9781', material: 'PORCA M6 INOX' },
+			{ codigo: '9359', material: 'PORLOCK M10 INOX' },
+			{ codigo: '9360', material: 'PORLOCK M3' },
+			{ codigo: '9784', material: 'PORCA 1/4' },
+			{ codigo: '9361', material: 'PORLOCK M4' },
+			{ codigo: '9362', material: 'PORLOCK M6' },
+			{ codigo: '3256', material: 'PORLOCK M8' },
+			{ codigo: '9363', material: 'PORCA 2,5 INOX' },
+			{ codigo: '9779', material: 'PORCA HASTE DOS PISTÕES 25X125/150/250' },
+			{ codigo: '9748', material: 'PORCA HASTE DOS PISTÕES MINI 16X80' },
+			{ codigo: '9264', material: 'PORCA NYLON' },
+			{ codigo: '9274', material: 'PORTA FUSIVEL' },
+			{ codigo: '9549', material: 'PG 11' },
+			{ codigo: '9364', material: 'PG7' },
+			{ codigo: '9532', material: 'REGULADOR 12V P/ 5V' },
+			{ codigo: '9112', material: 'REGULADOR 7812' },
+			{ codigo: '9900', material: 'RELÉ ACOPLADOR 12V' },
+			{ codigo: '11978', material: 'BASE DO RELÉ ACOPLADOR SLIM' },
+			{ codigo: '11981', material: 'RELÉ ACOPLADOR SLIM 220V' },
+			{ codigo: '10653', material: 'RELÉ TÉRMICO 1,6 - 2,5 A' },
+			{ codigo: '4595', material: 'RELÉ TERMICO 4,0 - 6,3A' },
+			{ codigo: '8829', material: 'REGULADOR DE FLUXO 6X1/8' },
+			{ codigo: '9934', material: 'RESISTOR 10K2 1% 1/4W' },
+			{ codigo: '9930', material: 'RJ45' },
+			{ codigo: '11181', material: 'ROTEADOR TP-LINK' },
+			{ codigo: '12206', material: 'SENSOR CAPACITIVO CA30' },
+			{ codigo: '9494', material: 'SENSOR BANANA' },
+			{ codigo: '8833', material: 'SILENCIADOR BRONZE 1/8' },
+			{ codigo: '13213', material: 'SLAT COLETA SOLO' },
+			{ codigo: '11648', material: 'SINALEIRO LED VERDE - 110/220V' },
+			{ codigo: '9273', material: 'SINDAL 10 MM' },
+			{ codigo: '10050', material: 'SINDAL 16 MM' },
+			{ codigo: '9557', material: 'SUPORTE DO LED 5MM' },
+			{ codigo: '9978', material: 'TECLADO BT' },
+			{ codigo: '9836', material: 'TECLADO BD15-SD/PS' },
+			{ codigo: '9859', material: 'TECLADO BD15-SD/SEL' },
+			{ codigo: '9398', material: 'TECLADO BD15-SEL' },
+			{ codigo: '9405', material: 'TECLADO SP-501 GRANDE' },
+			{ codigo: '9404', material: 'TECLADO SP-501 PEQUENO' },
+			{ codigo: '8895', material: 'TECLADO PS/SEL WIFI' },
+			{ codigo: '9956', material: 'TECLADO SEQUENCIAL' },
+			{ codigo: '9393', material: 'TERMINAL FEMEA TOTAL' },
+			{ codigo: '9368', material: 'TERMINAL OLHAL AZUL' },
+			{ codigo: '9368', material: 'TERMINAL OLHAL PEQUENO VERMELHO' },
+			{ codigo: '10575', material: 'TERMINAL GARFO PEQUENO VERMELHO' },
+			{ codigo: '9911', material: 'TERMINAL GARFO AZUL' },
+			{ codigo: '9391', material: 'TERMINAL TUBULAR 0,75MM BRANCO' },
+			{ codigo: '9431', material: 'TERMINAL TUBULAR 1MM VERMELHO' },
+			{ codigo: '9432', material: 'TERMINAL TUBULAR 1,5 MM PRETO' },
+			{ codigo: '9870', material: 'TERMINAL TUBULAR 1MM DUPLO VERMELHO' },
+			{ codigo: '9983', material: 'T PU8' },
+			{ codigo: '9984', material: 'ABRAÇADEIRA T PU8' },
+			{ codigo: '9509', material: 'T MULTIPLO PU6' },
+			{ codigo: '10022', material: 'TOMADA FEMEA' },
+			{ codigo: '8820', material: 'VALVULA ESFERA 1/4' },
+			{ codigo: '8822', material: 'VALVULA SOLENÓIDE 220V' },
+			{ codigo: '8818', material: 'VALVULA SOLENÓIDE 12V' },
+			{ codigo: '7212', material: 'ACRILICO DA BOBINA DA VALVULA' },
+			{ codigo: '9747', material: 'PORCA PROT. BOTÃO REGISTRA' }
+		];
 
-        // Estado da aplicação
+        // Estado global da aplicação
+		// Armazena dados temporários antes do envio
         let state = {
-            fotos: [],
-            materiais: [],
-            assinaturas: {
-                cliente: null,
-                tecnico: null
+            fotos: [],			// Array de fotos capturadas
+            materiais: [],		// Array de materiais utilizados
+            assinaturas: {		// Objeto para armazenar assinaturas
+                cliente: null,	// Data URL da assinatura do cliente
+                tecnico: null	// Data URL da assinatura do técnico
             }
         };
 
-		// ======== CONFIGURAÇÕES DE SINCRONIZAÇÃO ========
-const SYNC_CONFIG = {
-    endpoint: 'https://vps.pesoexato.com/servico_set',
-    interval: 5000, // 5 segundos
-    maxRetention: 14 * 24 * 60 * 60 * 1000 // 2 semanas
-};
+		// ======== Configuração de Sincronização ========
+		// Parâmetros para comunicação com servidor backend
+		const SYNC_CONFIG = {
+			endpoint: 'https://vps.pesoexato.com/servico_set',
+			interval: 5000, // 5 segundos
+			maxRetention: 14 * 24 * 60 * 60 * 1000 // 2 semanas
+		};
 
-		// ======== FUNÇÃO PARA GERAR CHAVE ÚNICA ========
-function generateUniqueKey() {
-    const timestamp = Date.now().toString(36);
-    const randomStr = Math.random().toString(36).substr(2, 9);
-    return `form_${timestamp}_${randomStr}`;
-}
+		// ======== Gerador de Chave Única ========
+		function generateUniqueKey() {
+			const timestamp = Date.now().toString(36);
+			const randomStr = Math.random().toString(36).substr(2, 9);
+			return `form_${timestamp}_${randomStr}`;
+		}
 
-async function registrarBackgroundSync() {
-    if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            await registration.sync.register('background-sync-formularios');
-            console.log('✅ Background Sync registrado para sincronização em background');
-            return true;
-        } catch (error) {
-            console.log('⚠️ Background Sync não disponível:', error);
-            return false;
-        }
-    }
-    return false;
-}
+		// ======== Registro de Background Sync ========
+		// Utiliza API de sincronização em segundo plano quando disponível
+		async function registrarBackgroundSync() {
+			// Verifica suporte do navegador para Background Sync API
+			if ('serviceWorker' in navigator && 'SyncManager' in window) {
+				try {
+					const registration = await navigator.serviceWorker.ready;
+					// Registra tag para sincronização automática quando online
+					await registration.sync.register('background-sync-formularios');
+					console.log('✅ Background Sync registrado para sincronização em background');
+					return true;
+				} catch (error) {
+					console.log('⚠️ Background Sync não disponível:', error);
+					return false;
+				}
+			}
+			return false;
+		}
 
-// ======== ESTADO DA SINCRONIZAÇÃO ========
-let syncState = {
-    pendingCount: 0,
-    isSyncing: false,
-    syncInterval: null
-};
+		// ======== Estado da sincronização ========
+		let syncState = {
+			pendingCount: 0,	// Contador de formulários pendentes de envio
+			isSyncing: false,	// Flag para evitar concorrência (mutex)
+			syncInterval: null	// Referência do intervalo de polling
+		};
 
-// ======== ELEMENTOS DA INTERFACE ========
-let syncBtn, syncBadge, syncIcon;
+		// ======== Elementos da interface ========
+		// Controla o estado atual das operações de sincronização
+		let syncBtn, syncBadge, syncIcon;
 
-        // Elementos DOM
-        const statusIndicator = document.getElementById('status-indicator');
-        const statusText = document.getElementById('status-text');
-        const exportBtn = document.getElementById('export-btn');
-        const fotosInput = document.getElementById('fotos-input');
-        const addFotosBtn = document.getElementById('add-fotos-btn');
-        const fotosPreview = document.getElementById('fotos-preview');
-        const materialInput = document.getElementById('material-input');
-        const materialQtd = document.getElementById('material-qtd');
-        const addMaterialBtn = document.getElementById('add-material-btn');
-        const materiaisLista = document.getElementById('materiais-lista');
-        const materiaisDatalist = document.getElementById('materiais-list');
-        const equipamentoSelect = document.getElementById('equipamento');
-        const equipamentoOutro = document.getElementById('equipamento-outro');
-        const notification = document.getElementById('notification');
-        const notificationIcon = document.getElementById('notification-icon');
-        const notificationText = document.getElementById('notification-text');
-        const imageModal = document.getElementById('image-modal');
-        const modalImage = document.getElementById('modal-image');
-        const modalClose = document.querySelector('.modal-close');
+		// Elementos DOM
+		// Cache de elementos para melhor performance
+		const statusIndicator = document.getElementById('status-indicator');	// LED de conexão
+		const statusText = document.getElementById('status-text');				// Texto de status
+		const exportBtn = document.getElementById('export-btn');				// Botão de exportação
+		const fotosInput = document.getElementById('fotos-input');				// Input file oculto
+		const addFotosBtn = document.getElementById('add-fotos-btn');			// Botão de upload
+		const fotosPreview = document.getElementById('fotos-preview');			// Container de preview
+		const materialInput = document.getElementById('material-input');		// Input de material
+		const materialQtd = document.getElementById('material-qtd');			// Input de quantidade
+		const addMaterialBtn = document.getElementById('add-material-btn');		// Botão de adição
+		const materiaisLista = document.getElementById('materiais-lista');		// Lista de materiais
+		const materiaisDatalist = document.getElementById('materiais-list');	// Datalist para autocomplete
+		const equipamentoSelect = document.getElementById('equipamento');		// Select de equipamentos
+		const equipamentoOutro = document.getElementById('equipamento-outro');	// Campo condicional
+		const notification = document.getElementById('notification');			// Toast notification
+		const notificationIcon = document.getElementById('notification-icon');	// Ícone do toast
+		const notificationText = document.getElementById('notification-text');	// Texto do toast
+		const imageModal = document.getElementById('image-modal');				// Modal de imagem
+		const modalImage = document.getElementById('modal-image');				// Imagem no modal
+		const modalClose = document.querySelector('.modal-close');				// Fechar modal
 
-        // Configuração dos canvas de assinatura
-        const canvasCliente = document.getElementById('assinatura-cliente');
-        const canvasTecnico = document.getElementById('assinatura-tecnico');
-        const ctxCliente = canvasCliente.getContext('2d');
-        const ctxTecnico = canvasTecnico.getContext('2d');
-        let isDrawingCliente = false;
-        let isDrawingTecnico = false;
-        let lastXCliente = 0;
-        let lastYCliente = 0;
-        let lastXTecnico = 0;
-        let lastYTecnico = 0;
+		// Configuração dos canvas de assinatura
+		// Contextos de renderização 2D para assinaturas digitais
+		const canvasCliente = document.getElementById('assinatura-cliente');
+		const canvasTecnico = document.getElementById('assinatura-tecnico');
+		const ctxCliente = canvasCliente.getContext('2d');	// Contexto para cliente
+		const ctxTecnico = canvasTecnico.getContext('2d');	// Contexto para técnico
+				
+		// Flags e coordenadas para controle de desenho freehand
+		let isDrawingCliente = false;	// Flag de desenho ativo (cliente)
+		let isDrawingTecnico = false;	// Flag de desenho ativo (técnico)
+		let lastXCliente = 0;			// Última coordenada X (cliente)
+		let lastYCliente = 0;			// Última coordenada Y (cliente)
+		let lastXTecnico = 0;			// Última coordenada X (técnico)
+		let lastYTecnico = 0;			// Última coordenada Y (técnico)
 
-        function updateOnlineStatus() {
-            if (navigator.onLine) {
-                statusIndicator.className = 'status-indicator status-online';
-                statusText.textContent = 'Online';
-            } else {
-                statusIndicator.className = 'status-indicator status-offline';
-                statusText.textContent = 'Offline';
-            }
-        }
+		// Atualiza indicador visual de status da rede
+		function updateOnlineStatus() {
+			if (navigator.onLine) {
+				statusIndicator.className = 'status-indicator status-online';	// Verde
+				statusText.textContent = 'Online';
+			} else {
+				statusIndicator.className = 'status-indicator status-offline';	// Vermelho
+				statusText.textContent = 'Offline';
+			}
+		}
 
-        function setupEventListeners() {
-            exportBtn.addEventListener('click', exportData);
-            addFotosBtn.addEventListener('click', () => fotosInput.click());
-            fotosInput.addEventListener('change', handleFileSelect);
-            addMaterialBtn.addEventListener('click', addMaterial);
-            materialInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') addMaterial();
-            });
-
-            document.getElementById('limpar-cliente').addEventListener('click', () => clearCanvas('cliente'));
-            document.getElementById('limpar-tecnico').addEventListener('click', () => clearCanvas('tecnico'));
-
-            equipamentoSelect.addEventListener('change', function() {
-                equipamentoOutro.classList.toggle('hidden', this.value !== 'OUTRO');
-            });
-
-            modalClose.addEventListener('click', () => {
-                imageModal.style.display = 'none';
-            });
-
-            window.addEventListener('click', (e) => {
-                if (e.target === imageModal) {
-                    imageModal.style.display = 'none';
-                }
-            });
-
+		// Event Listeners
+		// Registra handlers para interações do usuário
+		function setupEventListeners() {
+			// Ações principais
+			exportBtn.addEventListener('click', exportData);					// Exportar dados
+			addFotosBtn.addEventListener('click', () => fotosInput.click());	// Trigger file input
+			fotosInput.addEventListener('change', handleFileSelect);			// Processar upload
+			addMaterialBtn.addEventListener('click', addMaterial);				// Adicionar material
+			
+			// Atalho de teclado para adição de materiais
+			materialInput.addEventListener('keypress', (e) => {
+				if (e.key === 'Enter') addMaterial();
+			});
+			
+			// Limpeza de assinaturas
+			document.getElementById('limpar-cliente').addEventListener('click', () => clearCanvas('cliente'));
+			document.getElementById('limpar-tecnico').addEventListener('click', () => clearCanvas('tecnico'));
+			
+			// Campo condicional para equipamento "OUTRO"
+			equipamentoSelect.addEventListener('change', function() {
+				equipamentoOutro.classList.toggle('hidden', this.value !== 'OUTRO');
+			});
+					
+			// Fechamento do modal de imagem
+			modalClose.addEventListener('click', () => {
+				imageModal.style.display = 'none';
+			});
+					
+			// Fechamento do modal por clique externo
+			window.addEventListener('click', (e) => {
+				if (e.target === imageModal) {
+					imageModal.style.display = 'none';
+				}
+			});
+			
+			// Sincronização manual (se disponível)
 			if (document.getElementById('sync-btn')) {
-    document.getElementById('sync-btn').addEventListener('click', manualSync);
-}
-        }
-
+				document.getElementById('sync-btn').addEventListener('click', manualSync);
+			}
+		}
+		
+		// ======== Configuração Canvas ========
+		// Inicializa canvas com suporte a mouse e touch
         function setupSignatureCanvas(canvas, ctx, tipo) {
+			// Conversão de coordenadas de eventos para coordenadas canvas
             function getMousePos(e) {
                 const rect = canvas.getBoundingClientRect();
                 return {
@@ -748,7 +832,8 @@ let syncBtn, syncBadge, syncIcon;
                     y: e.clientY - rect.top
                 };
             }
-
+			
+			// Conversão de coordenadas touch para coordenadas canvas
             function getTouchPos(e) {
                 const rect = canvas.getBoundingClientRect();
                 const touch = e.touches[0];
@@ -757,7 +842,8 @@ let syncBtn, syncBadge, syncIcon;
                     y: touch.clientY - rect.top
                 };
             }
-
+			
+			// Função de desenho vetorial (linha entre pontos)
             function draw(x, y, isCliente) {
                 const config = isCliente ? 
                     { ctx: ctxCliente, drawing: isDrawingCliente, lastX: lastXCliente, lastY: lastYCliente } :
@@ -811,9 +897,9 @@ let syncBtn, syncBadge, syncIcon;
                 else isDrawingTecnico = false;
             });
 
-            // Eventos de toque
+            // Eventos de touch
             canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
+                e.preventDefault();	// Previne scroll durante desenho
                 if (tipo === 'cliente') {
                     isDrawingCliente = true;
                     const pos = getTouchPos(e);
@@ -828,7 +914,7 @@ let syncBtn, syncBadge, syncIcon;
             });
 
             canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
+                e.preventDefault();	// Previne scroll durante desenho
                 const pos = getTouchPos(e);
                 draw(pos.x, pos.y, tipo === 'cliente');
             });
@@ -844,7 +930,9 @@ let syncBtn, syncBadge, syncIcon;
             ctx.lineJoin = 'round';
             ctx.strokeStyle = '#000';
         }
-
+		
+		// ======== Limpeza Canvas ========
+		// Remove conteúdo do canvas e reseta estado
         function clearCanvas(tipo) {
             if (tipo === 'cliente') {
                 ctxCliente.clearRect(0, 0, canvasCliente.width, canvasCliente.height);
@@ -855,22 +943,25 @@ let syncBtn, syncBadge, syncIcon;
             }
             showNotification('Assinatura limpa', 'info');
         }
-
+		
+		// ======== Preenchimento autocolplete ========
         function populateMaterialsDatalist() {
             estoqueData.forEach(item => {
                 const option = document.createElement('option');
-                option.value = `${item.codigo} – ${item.material}`;
+                option.value = `${item.codigo} – ${item.material}`;	// Formato: código – descrição
                 materiaisDatalist.appendChild(option);
             });
         }
 
-				// ADICIONE ESTA FUNÇÃO ANTES de handleFileSelect (linha ~885)
+		// ======== Compressão de imagem ========
+		// Otimiza imagens para redução de tamanho antes do armazenamento
 		async function compressImage(base64, maxWidth = 900, quality = 0.65) {
 			return new Promise(resolve => {
 				const img = new Image();
 				img.onload = () => {
 					const canvas = document.createElement('canvas');
-
+					
+					// Calcula dimensões mantendo aspect ratio
 					const ratio = img.width / img.height;
 					if (img.width > maxWidth) {
 						canvas.width = maxWidth;
@@ -882,7 +973,8 @@ let syncBtn, syncBadge, syncIcon;
 
 					const ctx = canvas.getContext('2d');
 					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
+					
+					// Converte para JPEG com qualidade reduzida
 					const compressed = canvas.toDataURL('image/jpeg', quality);
 					resolve(compressed);
 				};
@@ -890,18 +982,22 @@ let syncBtn, syncBadge, syncIcon;
 			});
 		}
 
-		// SUBSTITUA a função handleFileSelect existente por esta:
+		// ======== Handles de upload de arquivos ========
+		// Processa múltiplos arquivos com compressão e validação
 		async function handleFileSelect(e) {
 			const files = e.target.files;
 			
+			// Valida limite máximo de arquivos
 			if (state.fotos.length + files.length > 10) {
 				showNotification('Máximo de 10 arquivos permitidos', 'error');
 				return;
 			}
-
+			
+			// Processamento assíncrono de cada arquivo
 			for (let i = 0; i < files.length; i++) {
 				const file = files[i];
 				
+				// Valida tipo MIME
 				if (!file.type.match('image.*')) {
 					showNotification('Apenas imagens são permitidas', 'error');
 					continue;
@@ -909,23 +1005,25 @@ let syncBtn, syncBadge, syncIcon;
 
 				const reader = new FileReader();
 				
+				// Callback assíncrono para processamento após leitura
 				reader.onload = (function(file) {
 					return async function(e) {
 						try {
 							showNotification('Processando imagem...', 'info');
 							
-							// ✅ COMPRIMIR A IMAGEM
+							// Pipeline de otimização de imagem
 							const imagemComprimida = await compressImage(e.target.result, 900, 0.65);
 							
+							// Metadados do arquivo processado
 							const fileData = {
-								name: file.name,
-								type: 'image/jpeg', // Forçar JPEG
-								data: imagemComprimida, // ✅ Usar versão comprimida
-								timestamp: new Date().toISOString()
+								name: file.name,					// Nome original
+								type: 'image/jpeg', 				// Tipo normalizado para JPEG
+								data: imagemComprimida, 			// Data URL comprimida
+								timestamp: new Date().toISOString()	// Timestamp ISO 8601
 							};
 							
-							state.fotos.push(fileData);
-							renderPhotoPreview(fileData);
+							state.fotos.push(fileData);				// Adiciona ao estado global
+							renderPhotoPreview(fileData);			// Atualiza UI
 							showNotification('Foto adicionada e otimizada', 'success');
 						} catch (error) {
 							console.error('Erro ao processar imagem:', error);
@@ -934,17 +1032,19 @@ let syncBtn, syncBadge, syncIcon;
 					};
 				})(file);
 				
-				reader.readAsDataURL(file);
+				reader.readAsDataURL(file);	// Inicia leitura como Data URL
 			}
 			
-			fotosInput.value = '';
+			fotosInput.value = '';	// Reseta input para permitir re-seleção
 		}
-
+		
+		// ======== Configuração Canvas ========
+		// Cria elementos visuais para preview com controles interativos
         function renderPhotoPreview(fileData) {
             const previewItem = document.createElement('div');
             previewItem.className = 'relative group';
             
-            // Remove a condição para vídeo - agora só mostra imagens
+            // Template com overlay hover e controles
             previewItem.innerHTML = `
                 <img src="${fileData.data}" class="photo-preview cursor-pointer">
                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -959,6 +1059,7 @@ let syncBtn, syncBadge, syncIcon;
             
             fotosPreview.appendChild(previewItem);
             
+			// Handlers para controles de preview
             previewItem.querySelector('.view-photo-btn').addEventListener('click', function() {
                 const index = parseInt(this.getAttribute('data-index'));
                 viewPhoto(index);
@@ -969,21 +1070,29 @@ let syncBtn, syncBadge, syncIcon;
                 deletePhoto(index);
             });
         }
-
+		
+		// ======== Vizualização em Modal ========
+		// Exibe imagem em tela cheia com navegação
         function viewPhoto(index) {
             const fileData = state.fotos[index];
             modalImage.src = fileData.data;
-            imageModal.style.display = 'flex';
+            imageModal.style.display = 'flex'; // Exibe modal com flexbox
         }
-
+		
+		// ======== Remover foto ========
+		// Remove imagem do estado e atualiza UI
         function deletePhoto(index) {
-            state.fotos.splice(index, 1);
-            renderPhotos();
+            state.fotos.splice(index, 1);	// Remove do array
+            renderPhotos();					// Re-renderiza toda a galeria
             showNotification('Arquivo removido', 'info');
         }
-
+		
+		// ======== Renderização completa da galeria ========
+		// Atualiza toda a seção de preview de fotos
         function renderPhotos() {
-            fotosPreview.innerHTML = '';
+            fotosPreview.innerHTML = '';	// Limpa container
+			
+			// Renderiza cada foto com índice atualizado
             state.fotos.forEach((fileData, index) => {
                 const previewItem = document.createElement('div');
                 previewItem.className = 'relative group';
@@ -1002,6 +1111,7 @@ let syncBtn, syncBadge, syncIcon;
                 
                 fotosPreview.appendChild(previewItem);
                 
+				// Reatribui event listeners com índices atualizados
                 previewItem.querySelector('.view-photo-btn').addEventListener('click', function() {
                     const idx = parseInt(this.getAttribute('data-index'));
                     viewPhoto(idx);
@@ -1013,11 +1123,14 @@ let syncBtn, syncBadge, syncIcon;
                 });
             });
         }
-
+		
+		// ======== Adição de material à lista ========
+		// Processa entrada do usuário e adiciona material ao estado
         function addMaterial() {
             const material = materialInput.value.trim();
             const qtd = materialQtd.value.trim();
             
+			// Validações de entrada
             if (!material || !qtd || Number(qtd) <= 0) {
                 showNotification('Preencha o material e a quantidade válida', 'error');
                 return;
@@ -1026,33 +1139,42 @@ let syncBtn, syncBadge, syncIcon;
             let codigo = '';
             let descricao = material;
             
+			// Parse do formato "código – descrição"
             if (material.indexOf(' – ') !== -1) {
                 const parts = material.split(' – ');
                 codigo = parts[0].trim();
                 descricao = parts.slice(1).join(' – ').trim();
             } else if (/^\d+/.test(material)) {
+				// Se começa com números, assume ser código
                 codigo = material;
                 descricao = '';
             }
             
+			// Adiciona ao estado global
             state.materiais.push({
-                codigo,
-                descricao: descricao || material,
-                quantidade: Number(qtd)
+                codigo,								// Código do material (opcional)
+                descricao: descricao || material,	// Descrição completa
+                quantidade: Number(qtd)				// Quantidade convertida para número
             });
             
+			// Limpa inputs
             materialInput.value = '';
             materialQtd.value = '';
-            renderMateriais();
+			
+            renderMateriais();	// Atualiza UI
             showNotification('Material adicionado', 'success');
         }
-
+		
+		// ======== Renderização da lista de materiais ========
+		// Atualiza visualização da lista de materiais
         function renderMateriais() {
-            materiaisLista.innerHTML = '';
+            materiaisLista.innerHTML = '';	// Limpa container
             
             state.materiais.forEach((item, index) => {
                 const materialItem = document.createElement('div');
                 materialItem.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg';
+				
+				// Template com informações formatadas
                 materialItem.innerHTML = `
                     <div>
                         <span class="font-medium">${item.descricao}</span>
@@ -1067,16 +1189,19 @@ let syncBtn, syncBadge, syncIcon;
                 materiaisLista.appendChild(materialItem);
             });
             
+			// Adiciona event listeners para botões de remoção
             document.querySelectorAll('.delete-material-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const index = parseInt(this.getAttribute('data-index'));
-                    state.materiais.splice(index, 1);
-                    renderMateriais();
+                    state.materiais.splice(index, 1);	// Remove do estado
+                    renderMateriais();					// Re-renderiza
                     showNotification('Material removido', 'info');
                 });
             });
         }
-
+		
+		// ======== Coleta de dados do formulário ========
+		// Serializa valores dos campos em objeto estruturado
         function collectFormData() {
             return {
                 cliente: document.getElementById('cliente').value,
@@ -1098,23 +1223,26 @@ let syncBtn, syncBadge, syncIcon;
                 tecnicoNome: document.getElementById('tecnico-nome').value
             };
         }
-
+		
+		// Validação do formulário
         function validateForm() {
             const requiredFields = [
                 'cliente', 'cidade', 'equipamento', 'tecnico', 'servico',
                 'data-inicial', 'hora-inicial', 'data-final', 'hora-final',
                 'relatorio-maquina', 'cliente-nome', 'cliente-email', 'tecnico-nome'
             ];
-
+			
+			// Valida campos obrigatórios
             for (const fieldId of requiredFields) {
                 const field = document.getElementById(fieldId);
                 if (!field.value.trim()) {
                     showNotification(`Preencha o campo: ${field.labels[0].textContent}`, 'error');
-                    field.focus();
+                    field.focus();	// Foco no campo faltante
                     return false;
                 }
             }
-
+			
+			// Valida presença de assinaturas
             if (!state.assinaturas.cliente) {
                 showNotification('Assinatura do cliente é obrigatória', 'error');
                 return false;
@@ -1125,1080 +1253,1176 @@ let syncBtn, syncBadge, syncIcon;
                 return false;
             }
 
-            return true;
+            return true; // Formulário válido
         }
 		
-// ======== GERENCIAMENTO DE FORMULÁRIOS SALVOS (INDEXEDDB) ========
+		// ======== Gerenciamento de formulários salvos (IndexdDB) ========
+		// Mapeamento de campo interno e ID DOM
+		// Mantém compatibilidade entre estrutura de dados e interface
+		const FIELD_ID_MAP = {
+			cliente: 'cliente',
+			cidade: 'cidade',
+			equipamento: 'equipamento',
+			equipamentoOutro: 'equipamento-outro',
+			tecnico: 'tecnico',
+			servico: 'servico',
+			dataInicial: 'data-inicial',
+			horaInicial: 'hora-inicial',
+			dataFinal: 'data-final',
+			horaFinal: 'hora-final',
+			veiculo: 'veiculo',
+			estoque: 'estoque',
+			numeroSerie: 'numero-serie',
+			relatorioMaquina: 'relatorio-maquina',
+			clienteNome: 'cliente-nome',
+			clienteEmail: 'cliente-email',
+			tecnicoNome: 'tecnico-nome'
+		};
+
+		// ======== Configuração IndexdDB ========
+		// Esquema de armazenamento offline
+		const DB_NAME = 'FormulariosDB';	// Nome do banco
+		const DB_VERSION = 4;				// Schema version (para migrations)
+		const STORE_NAME = 'formularios';	// Object store principal
+
+		let dbPromise;	// Promessa singleton para conexão com banco
+
+		// ======== Configuração IndexdDB ========
+		// Singleton pattern para gerenciamento de conexão
+		function initDB() {
+			// Retorna conexão existente se disponível
+			if (dbPromise) return dbPromise;
+			
+			// Abre conexão com estratégia de upgrade
+			dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
+				// Callback para migrações de schema
+				upgrade(db, oldVersion) {
+					console.log('Migrando banco de dados da versão', oldVersion, 'para', DB_VERSION);
+					
+					// Cria store se não existir
+					if (!db.objectStoreNames.contains(STORE_NAME)) {
+						console.log('Criando nova store:', STORE_NAME);
+						const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+						
+						// Índices secundários para consultas otimizadas
+						store.createIndex('cliente', 'cliente', { unique: false });
+						store.createIndex('servico', 'servico', { unique: false });
+						store.createIndex('sincronizado', 'sincronizado', { unique: false });
+					} else {
+						console.log('Store já existe:', STORE_NAME);
+						
+						// Obtém store para migrações
+						const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
+						
+						// ======== Migração V1 para V2 ========
+						// Adiciona flag de sincronização
+						if (oldVersion < 2) {
+							console.log('Migrando para versão 2: adicionando campo sincronizado');
+							return store.getAll().then(forms => {
+								const updates = forms.map(form => {
+									if (form.sincronizado === undefined) {
+										form.sincronizado = false;	// Default para não sincronizado
+										return store.put(form);		// Atualiza registro
+									}
+								}).filter(Boolean);	// Remove undefined
+								return Promise.all(updates);
+							});
+						}
+						
+						// ======== Migração V2 para V3 ========
+						// Adiciona chave única para sincronização
+						if (oldVersion < 3) {
+							console.log('Migrando para versão 3: adicionando campo chaveUnica');
+							return store.getAll().then(forms => {
+								const updates = forms.map(form => {
+									if (form.chaveUnica === undefined) {
+										// Gera chave única para tracking
+										form.chaveUnica = generateUniqueKey();
+										return store.put(form);
+									}
+								}).filter(Boolean);
+								return Promise.all(updates);
+							});
+						}
+						
+						// ======== Migração V3 para V4 ========
+						// Apenas version bump (sem mudanças estruturais)
+						if (oldVersion < 4) {
+							console.log('Migrando para versão 4: atualização estrutural');
+							// Nada para fazer, apenas atualiza a versão
+							return Promise.resolve();
+						}
+					}
+				},
+			}).then(db => {
+				console.log('Banco de dados inicializado com sucesso');
+				return db;
+			}).catch(error => {
+				console.error('Erro ao inicializar banco de dados:', error);
+				dbPromise = null; // Permite retentativa
+				throw error;
+			});
+			
+			return dbPromise;
+		}
+
+
+		// ======== Limpeza de registros antigos ========
+		// Policy de retenção: 14 dias
+		async function limparRegistrosAntigos(db) {
+			const twentyFourHours = 14 * 24 * 60 * 60 * 1000; 	// 14 dias em ms
+			const cutoff = Date.now() - twentyFourHours;		// Timestamp limite
 
-// Mapeamento: keys internas -> ids reais dos inputs (MANTIDO)
-const FIELD_ID_MAP = {
-    cliente: 'cliente',
-    cidade: 'cidade',
-    equipamento: 'equipamento',
-    equipamentoOutro: 'equipamento-outro',
-    tecnico: 'tecnico',
-    servico: 'servico',
-    dataInicial: 'data-inicial',
-    horaInicial: 'hora-inicial',
-    dataFinal: 'data-final',
-    horaFinal: 'hora-final',
-    veiculo: 'veiculo',
-    estoque: 'estoque',
-    numeroSerie: 'numero-serie',
-    relatorioMaquina: 'relatorio-maquina',
-    clienteNome: 'cliente-nome',
-    clienteEmail: 'cliente-email',
-    tecnicoNome: 'tecnico-nome'
-};
-
-// ======== CONFIGURAÇÃO DO INDEXEDDB ========
-const DB_NAME = 'FormulariosDB';
-const DB_VERSION = 4;
-const STORE_NAME = 'formularios';
-
-let dbPromise;
-
-// Inicializa a conexão com o IndexedDB
-function initDB() {
-    if (dbPromise) return dbPromise;
-
-    dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
-        upgrade(db, oldVersion) {
-            console.log('Migrando banco de dados da versão', oldVersion, 'para', DB_VERSION);
-            
-            // Sempre cria a store se não existir
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                console.log('Criando nova store:', STORE_NAME);
-                const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                store.createIndex('cliente', 'cliente', { unique: false });
-                store.createIndex('servico', 'servico', { unique: false });
-                store.createIndex('sincronizado', 'sincronizado', { unique: false });
-            } else {
-                console.log('Store já existe:', STORE_NAME);
-                
-                // Para migrações, fazemos uma de cada vez
-                const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
-                
-                // Migração da versão 1 para 2: adicionar campo sincronizado
-                if (oldVersion < 2) {
-                    console.log('Migrando para versão 2: adicionando campo sincronizado');
-                    return store.getAll().then(forms => {
-                        const updates = forms.map(form => {
-                            if (form.sincronizado === undefined) {
-                                form.sincronizado = false;
-                                return store.put(form);
-                            }
-                        }).filter(Boolean);
-                        return Promise.all(updates);
-                    });
-                }
-                
-                // Migração da versão 2 para 3: adicionar campo chaveUnica
-                if (oldVersion < 3) {
-                    console.log('Migrando para versão 3: adicionando campo chaveUnica');
-                    return store.getAll().then(forms => {
-                        const updates = forms.map(form => {
-                            if (form.chaveUnica === undefined) {
-                                form.chaveUnica = generateUniqueKey();
-                                return store.put(form);
-                            }
-                        }).filter(Boolean);
-                        return Promise.all(updates);
-                    });
-                }
-                
-                // Migração da versão 3 para 4: apenas atualização estrutural
-                if (oldVersion < 4) {
-                    console.log('Migrando para versão 4: atualização estrutural');
-                    // Nada para fazer, apenas atualiza a versão
-                    return Promise.resolve();
-                }
-            }
-        },
-    }).then(db => {
-        console.log('Banco de dados inicializado com sucesso');
-        return db;
-    }).catch(error => {
-        console.error('Erro ao inicializar banco de dados:', error);
-        dbPromise = null; // Permite tentar novamente
-        throw error;
-    });
-    
-    return dbPromise;
-}
-
-
-// Função auxiliar para remover registros mais antigos que 24h
-async function limparRegistrosAntigos(db) {
-    const twentyFourHours = 14 * 24 * 60 * 60 * 1000;
-    const cutoff = Date.now() - twentyFourHours;
-
-    try {
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-
-        // Abre um cursor (ponteiro) para iterar pelos registros
-        let cursor = await store.openCursor();
-        while (cursor) {
-            if (cursor.key < cutoff) {
-                // Deleta o registro se o ID (timestamp) for mais antigo que o limite
-                cursor.delete(); 
-            }
-            cursor = await cursor.continue();
-        }
-        await tx.done; // Aguarda a conclusão da transação
-    } catch (e) {
-        // Se a store não existir (erro na inicialização), ignorar
-        console.warn("Erro ao tentar limpar registros antigos (pode ser inicialização):", e);
-    }
-}
-
-// Salva o formulário no IndexedDB
-async function salvarFormularioLocal() {
-    if (!validateForm()) return;
-    const f = collectFormData(); 
-
-    const id = Date.now();
-
-    // ✅ GERAR OS PDFs ANTES DE SALVAR
-    console.log('🔄 Gerando PDFs...');
-    const fichaPDFBase64 = await gerarFichaPDFBase64(
-        f, 
-        state.materiais, 
-        state.fotos, 
-        state.assinaturas
-    );
-    
-    const relatorioPDFBase64 = await gerarRelatorioPDFBase64(
-        f, 
-        state.materiais, 
-        state.fotos, 
-        state.assinaturas
-    );
-    console.log('✅ PDFs gerados');
-
-    const registro = {
-	    id: id,
-	    createdAt: new Date().toISOString(),
-	
-	    cliente: f.cliente,
-	    cidade: f.cidade,
-	    equipamento: f.equipamento === 'OUTRO' ? f.equipamentoOutro : f.equipamento,
-	    tecnico: f.tecnico,
-	    servico: f.servico,
-	
-	    dataInicial: f.dataInicial,
-	    horaInicial: f.horaInicial,
-	    dataFinal: f.dataFinal,
-	    horaFinal: f.horaFinal,
-	
-	    veiculo: f.veiculo,
-	    estoque: f.estoque,
-	    numeroSerie: f.numeroSerie,
-	
-	    relatorioMaquina: f.relatorioMaquina,
-	
-	    fotos: state.fotos,              // já estão comprimidas
-	    assinaturas: state.assinaturas,  // base64
-	    clienteNome: f.clienteNome,
-	    tecnicoNome: f.tecnicoNome,
-	
-	    materiais: state.materiais,
-	
-	    sincronizado: false,
-	    syncedAt: null,
-	    chaveUnica: generateUniqueKey()
-	};
-
-    try {
-        const db = await initDB();
-        await db.put(STORE_NAME, registro);
-        await registrarBackgroundSync();
-        await updatePendingCount();
-
-        if (navigator.onLine) {
-            setTimeout(() => attemptSync(), 1000);
-        }
-
-        showNotification('Formulário salvo localmente!', 'success');
-        await renderFormulariosSalvos();
-        
-    } catch (e) {
-        console.error("Erro ao salvar:", e);
-        showNotification('Erro ao salvar formulário', 'error');
-    }
-}
-
-// Renderiza a seção de formulários salvos
-async function renderFormulariosSalvos() {
-    const containerId = 'formularios-salvos';
-    let container = document.getElementById(containerId);
-
-    if (!container) {
-        container = document.createElement('section');
-        container.id = containerId;
-        container.className = 'form-section';
-        // ASSUME-SE que document.querySelector('main') existe
-        const main = document.querySelector('main');
-        if (main) {
-            main.appendChild(container);
-        } else {
-            console.error("Elemento 'main' não encontrado. Não é possível renderizar a seção de salvos.");
-            return;
-        }
-    }
-	
-	
-
-    // Estrutura HTML
-container.innerHTML = `
-    <h2 class="text-xl font-semibold flex items-center">
-        <i class="fas fa-history text-blue-600 mr-2"></i> Formulários Salvos
-        <span class="ml-2 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
-            ${syncState.pendingCount} pendente(s)
-        </span>
-    </h2>
-    <div id="lista-formularios" class="space-y-2"></div>
-`;
-
-    const lista = container.querySelector('#lista-formularios');
-
-    try {
-        const db = await initDB();
-
-        // Faz a limpeza antes de ler a lista
-        await limparRegistrosAntigos(db);
-
-        // Obtém todos os registros do IndexedDB
-        let registros = await db.getAll(STORE_NAME);
-        
-        // Ordenar pelo ID (mais novo primeiro)
-        registros.sort((a, b) => b.id - a.id); 
-
-        if (registros.length === 0) {
-            lista.innerHTML = `<p class="text-gray-500 text-sm">Nenhum formulário salvo nas últimas 2 semanas.</p>`;
-            return;
-        }
-
-        // Renderiza os itens na lista
-registros.forEach(registro => {
-    const dataLegivel = new Date(registro.id).toLocaleString();
-    const statusIcon = registro.sincronizado 
-        ? '<i class="fas fa-check-circle text-green-500" title="Sincronizado"></i>'
-        : '<i class="fas fa-clock text-yellow-500" title="Pendente de sincronização"></i>';
-    
-    const item = document.createElement('div');
-    item.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm';
-    item.innerHTML = `
-        <div class="flex items-center">
-            ${statusIcon}
-            <div class="ml-2">
-                <div class="font-medium text-gray-800">${registro.cliente || '—'}</div>
-                <div class="text-sm text-gray-500">${registro.servico || '—'} • ${dataLegivel}</div>
-            </div>
-        </div>
-        <div class="flex space-x-2">
-            <button class="btn-secondary px-3 py-1 rounded edit-btn" data-id="${registro.id}">
-                <i class="fas fa-edit"></i> Editar
-            </button>
-            <button class="btn-secondary px-3 py-1 rounded text-red-600 delete-btn" data-id="${registro.id}">
-                <i class="fas fa-trash"></i>
-            </button>
-
-			${
-		        registro.sincronizado && registro.serverId
-		        ? `
-		        <button class="btn-secondary px-3 py-1 rounded text-green-600 share-btn"
-		                data-id="${registro.id}"
-		                title="Compartilhar no WhatsApp">
-		            <i class="fab fa-whatsapp"></i>
-		        </button>
-		        `
-		        : ''
-		    }
-        </div>
-    `;
-    lista.appendChild(item);
-});
-
-        // Delegação dos eventos - DEVE SER FEITA APÓS INSERIR OS ITENS NA LISTA
-        lista.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', e => {
-                const id = e.currentTarget.dataset.id;
-                carregarFormularioLocal(id); 
-            });
-        });
-
-        lista.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', e => {
-                const id = e.currentTarget.dataset.id;
-                removerFormularioLocal(id);
-            });
-        });
-
-		lista.querySelectorAll('.share-btn').forEach(btn => {
-		    btn.addEventListener('click', e => {
-		        const id = e.currentTarget.dataset.id;
-		        compartilharFormulario(id);
-		    });
-		});
-
-    } catch (e) {
-        console.error("Erro fatal ao renderizar formulários do IndexedDB:", e);
-        lista.innerHTML = `<p class="text-red-500 text-sm">Erro ao carregar lista de formulários. (Verifique a console.)</p>`;
-    }
-}
-
-// Carrega um formulário salvo (popula inputs, materiais, fotos e assinaturas)
-async function carregarFormularioLocal(id) {
-    try {
-        const db = await initDB();
-        // 'get' busca um registro pela chave primária (id)
-        const registro = await db.get(STORE_NAME, Number(id));
-
-        if (!registro) {
-            showNotification('Registro não encontrado', 'error');
-            return;
-        }
-
-        const f = registro;
-
-        // 1. Preencher campos usando o mapa (LÓGICA MANTIDA)
-        for (const key in FIELD_ID_MAP) {
-            const elId = FIELD_ID_MAP[key];
-            const el = document.getElementById(elId);
-            if (!el) continue;
-
-            const val = f[key] !== undefined ? f[key] : '';
-            if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                el.value = val;
-                // trigger change visual 
-                if (elId === 'equipamento') {
-                    // Assume-se que 'equipamentoOutro' está definido globalmente
-                    equipamentoOutro.classList.toggle('hidden', el.value !== 'OUTRO'); 
-                }
-            }
-        }
-
-        // 2. Restaurar materiais e fotos no state e na UI
-        // ASSUME-SE que 'state' e 'renderMateriais/renderPhotos' estão definidos globalmente
-        state.materiais = registro.materiais ? JSON.parse(JSON.stringify(registro.materiais)) : [];
-        renderMateriais(); 
-
-        state.fotos = registro.fotos ? JSON.parse(JSON.stringify(registro.fotos)) : [];
-        renderPhotos(); 
-
-        // 3. Restaurar assinaturas
-        // ASSUME-SE que 'canvasCliente/ctxCliente/etc.' estão definidos globalmente
-        state.assinaturas = registro.assinaturas || { cliente: null, tecnico: null };
-        if (state.assinaturas.cliente) {
-            drawDataUrlOnCanvas(state.assinaturas.cliente, canvasCliente, ctxCliente);
-        } else {
-            ctxCliente.clearRect(0, 0, canvasCliente.width, canvasCliente.height);
-        }
-        if (state.assinaturas.tecnico) {
-            drawDataUrlOnCanvas(state.assinaturas.tecnico, canvasTecnico, ctxTecnico);
-        } else {
-            ctxTecnico.clearRect(0, 0, canvasTecnico.width, canvasTecnico.height);
-        }
-
-        showNotification('Formulário carregado para edição.', 'info');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) {
-        console.error("Erro ao carregar registro do IndexedDB:", e);
-        showNotification('Erro ao carregar formulário.', 'error');
-    }
-}
-
-// Remove um formulário salvo
-async function removerFormularioLocal(id) {
-    try {
-        const db = await initDB();
-        // 'delete' remove o registro pela chave primária (id)
-        await db.delete(STORE_NAME, Number(id));
-
-        showNotification('Formulário excluído.', 'info');
-        await renderFormulariosSalvos(); // Renderiza a UI após a exclusão
-    } catch (e) {
-        console.error("Erro ao remover do IndexedDB:", e);
-        showNotification('Erro ao excluir formulário.', 'error');
-    }
-}
-
-async function compartilharFormulario(id) {
-    try {
-        const db = await initDB();
-        const form = await db.get(STORE_NAME, Number(id));
-
-        if (!form || !form.sincronizado || !form.serverId) {
-            showNotification('Formulário não sincronizado', 'error');
-            return;
-        }
-
-        // 🔹 Gerar PDFs (retornam Blob)
-        const fichaBlob = await gerarFichaPDFBase64(
-            form,
-            form.materiais,
-            form.fotos,
-            form.assinaturas,
-            form.serverId
-        );
-
-        const relatorioBlob = await gerarRelatorioPDFBase64(
-            form,
-            form.materiais,
-            form.fotos,
-            form.assinaturas,
-            form.serverId
-        );
-
-        // 🔹 Converter Blob → File (OBRIGATÓRIO para Web Share)
-        const fichaFile = new File(
-            [fichaBlob],
-            `Ficha_${form.serverId}.pdf`,
-            { type: 'application/pdf' }
-        );
-
-        const relatorioFile = new File(
-            [relatorioBlob],
-            `Relatorio_${form.serverId}.pdf`,
-            { type: 'application/pdf' }
-        );
-
-        // 🔹 Compartilhar
-        if (
-            navigator.canShare &&
-            navigator.canShare({ files: [fichaFile, relatorioFile] })
-        ) {
-            await navigator.share({
-                title: `Serviço ${form.serverId}`,
-                text: `Relatório de serviço\nID: ${form.serverId}`,
-                files: [fichaFile, relatorioFile]
-            });
-        } else {
-            const msg = encodeURIComponent(
-                `Relatório de serviço\nID: ${form.serverId}`
-            );
-            window.open(`https://wa.me/?text=${msg}`, '_blank');
-        }
-
-    } catch (e) {
-        console.error('Erro ao compartilhar:', e);
-        showNotification('Erro ao compartilhar', 'error');
-    }
-}
-
-
-// Helper: desenha um dataURL em um canvas mantendo proporção
-function drawDataUrlOnCanvas(dataUrl, canvas, ctx) {
-    const img = new Image();
-    img.onload = () => {
-        // Limpa canvas e desenha centrado/escalado
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // ajustar resolução do canvas para evitar distorção em retina
-        // (supondo que canvas já tenha tamanho no CSS, ajustamos o tamanho real)
-        const ratio = window.devicePixelRatio || 1;
-        if (canvas.width !== canvas.clientWidth * ratio) {
-            canvas.width = canvas.clientWidth * ratio;
-            canvas.height = canvas.clientHeight * ratio;
-            ctx.scale(ratio, ratio);
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.strokeStyle = '#000';
-        }
-        // desenhar
-        ctx.drawImage(img, 0, 0, canvas.clientWidth, canvas.clientHeight);
-    };
-    img.src = dataUrl;
-}
-
-// =======================================================
-// NOVO PONTO DE INÍCIO: Garante que o DB seja inicializado
-// =======================================================
-
-async function startApp() {
-    try {
-        // Inicializar banco de dados com tratamento de erro específico
-        try {
-            await initDB();
-        } catch (dbError) {
-            console.error('Erro crítico no banco de dados:', dbError);
-            // Tenta recriar o banco de dados
-            await recriarBancoDados();
-        }
-        
-        // Inicializar sistema de sincronização
-        initSync();
-        
-        // Renderizar formulários salvos
-        await renderFormulariosSalvos();
-        
-        // Resto das configurações...
-        updateOnlineStatus();
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-        setupEventListeners();
-        setupSignatureCanvas(canvasCliente, ctxCliente, 'cliente');
-        setupSignatureCanvas(canvasTecnico, ctxTecnico, 'tecnico');
-        populateMaterialsDatalist();
-
-        // Registrar Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=022')
-                    .then(reg => {
-                        console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
-                    })
-                    .catch(error => {
-                        console.error('Falha no registro do Service Worker:', error);
-                    });
-            });
-        }
-        
-    } catch (error) {
-        console.error("Falha ao iniciar a aplicação:", error);
-        showNotification('Erro ao inicializar aplicação. Recarregue a página.', 'error');
-    }
-}
-
-// Função para recriar o banco em caso de erro
-async function recriarBancoDados() {
-    try {
-        console.log('Tentando recriar banco de dados...');
-        // Fecha conexão existente
-        if (dbPromise) {
-            const db = await dbPromise;
-            db.close();
-            dbPromise = null;
-        }
-        
-        // Deleta o banco existente
-        await idb.deleteDB(DB_NAME);
-        console.log('Banco antigo deletado');
-        
-        // Recria o banco
-        await initDB();
-        console.log('Novo banco criado com sucesso');
-        
-    } catch (error) {
-        console.error('Falha ao recriar banco de dados:', error);
-        throw error;
-    }
-}
-
-// Substitui o listener antigo: Inicia a aplicação após o DOM carregar
-document.addEventListener('DOMContentLoaded', startApp);
-
-// O listener do botão de exportação (MANTIDO)
-// ASSUME-SE que 'exportBtn' está definido globalmente
-exportBtn.addEventListener('click', function(e) {
-    // salvar local antes de exportar
-    salvarFormularioLocal();
-    // continue com a rotina existente de export...
-});
-
-// ======== GERADOR DE PDF (FORMATAÇÃO ORIGINAL DO GERADOR PDF.html) ========
-
-// Garante que o jsPDF foi carregado antes de gerar
-async function gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas) {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-        console.warn("jsPDF ainda não carregado, adiando geração...");
-        setTimeout(() => gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas), 500);
-        return;
-    }
-
-    try {
-        // Gera e faz download da Ficha
-        await gerarFichaPDFBase64(formData, materiais, fotos, assinaturas);
-        
-        // Pequeno delay entre downloads
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Gera e faz download do Relatório
-        await gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas);
-        
-        showNotification("PDFs baixados com sucesso!", "success");
-    } catch (e) {
-        console.error("Erro ao gerar PDFs:", e);
-        showNotification("Erro ao gerar PDFs", "error");
-    }
-}
-
-// Função auxiliar para formatar data
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`;
-}
-
-// ======== FICHA DE MANUTENÇÃO ========
-// Versão modificada que retorna Base64 ao invés de fazer download
-async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, serverId = null) {
-    const { jsPDF } = window.jspdf;
-
-    const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4',
-        compress: true,
-        compression: 'MEDIUM',
-        putOnlyUsedFonts: true,
-        floatPrecision: 2
-    });
-
-    // ✅ DECLARE ANTES DE USAR
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    const logo = await carregarImagem("Logo.png");
-    let y = 20;
-
-    // Logo e cabeçalho
-    doc.setFillColor(0, 82, 163);
-    doc.rect(0, 0, pageWidth, 17, 'F');
-
-	// ✅ ID NO CABEÇALHO
-    if (serverId) {
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
-        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
-    }
-    
-    if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('FICHA DE MANUTENÇÃO', pageWidth / 2, 11, { align: 'center' });
-    y = 22;
-
-    const tableStyles4Col = {
-        styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
-        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
-        columnStyles: {
-            0: { cellWidth: (pageWidth - 16) / 4 },
-            1: { cellWidth: (pageWidth - 16) / 4 },
-            2: { cellWidth: (pageWidth - 16) / 4 },
-            3: { cellWidth: (pageWidth - 16) / 4 }
-        },
-        margin: { left: 8, right: 8 },
-        theme: 'grid'
-    };
-    
-    const table1Data = [[
-        formData.cliente || '-',
-        formData.cidade || '-',
-        formData.equipamento || '-',
-        formData.numeroSerie || '-'
-    ]];
-    
-    doc.autoTable({
-        startY: y,
-        head: [['CLIENTE', 'CIDADE', 'EQUIPAMENTO', 'Nº SÉRIE']],
-        body: table1Data,
-        ...tableStyles4Col
-    });
-    
-    y = doc.lastAutoTable.finalY + 4;
-    
-    const table2Data = [[
-        formData.tecnico || '-',
-        formData.veiculo || '-',
-        formData.estoque || '-',
-        formData.dataInicial ? formatDate(formData.dataInicial) : '-'
-    ]];
-    
-    doc.autoTable({
-        startY: y,
-        head: [['TÉCNICO', 'VEÍCULO', 'ESTOQUE', 'DATA']],
-        body: table2Data,
-        ...tableStyles4Col
-    });
-    
-    y = doc.lastAutoTable.finalY + 8;
-    
-    doc.setTextColor(0, 82, 163);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MATERIAIS UTILIZADOS', 10, y);
-    y += 6;
-    
-    const materialsData = [];
-    if (materiais && materiais.length > 0) {
-        materiais.forEach(material => {
-            materialsData.push([
-                material.codigo || '',
-                material.quantidade || '',
-                material.descricao || ''
-            ]);
-        });
-    } else {
-        materialsData.push(['', '', 'Nenhum material utilizado.']);
-    }
-    
-    doc.autoTable({
-        startY: y,
-        head: [['CÓDIGO', 'QNTD', 'MATERIAIS']],
-        body: materialsData,
-        styles: { fontSize: 8, cellPadding: 3 },
-        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
-        columnStyles: {
-            0: { cellWidth: 25, halign: 'center' },
-            1: { cellWidth: 20, halign: 'center' },
-            2: { cellWidth: pageWidth - 16 - 45, halign: 'left' }
-        },
-        margin: { left: 8, right: 8 },
-        theme: 'grid'
-    });
-    
-    y = doc.lastAutoTable.finalY + 8;
-    
-    doc.setTextColor(0, 82, 163);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('ORDEM DE SERVIÇO', 10, y);
-    y += 6;
-    
-    const table3Data = [[
-        formData.osComplementar || '',
-        formData.osServico || ''
-    ]];
-    
-    doc.autoTable({
-        startY: y,
-        head: [['OS COMPLEMENTAR', 'OS SERVIÇO']],
-        body: table3Data,
-        styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
-        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
-        columnStyles: {
-            0: { cellWidth: (pageWidth - 16) / 2 },
-            1: { cellWidth: (pageWidth - 16) / 2 }
-        },
-        margin: { left: 8, right: 8 },
-        theme: 'grid'
-    });
-    
-    y = doc.lastAutoTable.finalY + 15;
-    
-    const signatureWidth = 50;
-    const signatureHeight = 25;
-    const spacing = (pageWidth - (signatureWidth * 2)) / 3;
-    
-    if (assinaturas && assinaturas.tecnico) {
-        try {
-            doc.addImage(assinaturas.tecnico, 'PNG', spacing, y, signatureWidth, signatureHeight);
-        } catch (e) {
-            console.error('Erro ao adicionar assinatura do técnico:', e);
-        }
-    }
-    
-    if (assinaturas && assinaturas.cliente) {
-        try {
-            doc.addImage(assinaturas.cliente, 'PNG', spacing * 2 + signatureWidth, y, signatureWidth, signatureHeight);
-        } catch (e) {
-            console.error('Erro ao adicionar assinatura do cliente:', e);
-        }
-    }
-    
-    y += signatureHeight + 2;
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.3);
-    doc.line(spacing, y, spacing + signatureWidth, y);
-    doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
-    
-    doc.setTextColor(0, 0, 0);
-	doc.setFontSize(7);
-	doc.setFont('helvetica', 'normal');
-	doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
-	doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
-    
-    return doc.output('blob');
-}
-
-// Versão modificada do Relatório que retorna Base64
-async function gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas, serverId = null) {
-    const { jsPDF } = window.jspdf;
-
-    const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4',
-        compress: true,
-        compression: 'MEDIUM',
-        putOnlyUsedFonts: true,
-        floatPrecision: 2
-    });
-
-    // ✅ DECLARE ANTES DE USAR
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    const logo = await carregarImagem("Logo.png");
-    let y = 20;
-
-    // Logo e cabeçalho
-    doc.setFillColor(0, 82, 163);
-    doc.rect(0, 0, pageWidth, 17, 'F');
-
-	    // ✅ ID NO CABEÇALHO
-    if (serverId) {
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
-        doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
-    }
-    
-    if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('RELATÓRIO DE PRESTAÇÃO DE SERVIÇO', pageWidth / 2, 11, { align: 'center' });
-    y = 22;
-
-    const tableStyles3Col = {
-        styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
-        headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
-        columnStyles: {
-            0: { cellWidth: (pageWidth - 16) / 3, halign: 'center' },
-            1: { cellWidth: (pageWidth - 16) / 3, halign: 'center' },
-            2: { cellWidth: (pageWidth - 16) / 3, halign: 'center' }
-        },
-        margin: { left: 8, right: 8 },
-        theme: 'grid'
-    };
-    
-    const table1Data = [[
-        formData.cliente || '-',
-        formData.cidade || '-',
-        formData.equipamento || '-'
-    ]];
-    
-    doc.autoTable({
-        startY: y,
-        head: [['CLIENTE', 'CIDADE', 'EQUIPAMENTO']],
-        body: table1Data,
-        ...tableStyles3Col
-    });
-    
-    y = doc.lastAutoTable.finalY + 4;
-    
-    const table2Data = [[
-        formData.tecnico || '-',
-        formData.dataInicial ? formatDate(formData.dataInicial) : '-',
-        formData.dataFinal ? formatDate(formData.dataFinal) : '-'
-    ]];
-    
-    doc.autoTable({
-        startY: y,
-        head: [['TÉCNICO', 'DATA INICIAL', 'DATA FINAL']],
-        body: table2Data,
-        ...tableStyles3Col
-    });
-    
-    y = doc.lastAutoTable.finalY + 4;
-    
-    const table3Data = [[
-        formData.servico || '-',
-        formData.horaInicial || '-',
-        formData.horaFinal || '-'
-    ]];
-    
-    doc.autoTable({
-        startY: y,
-        head: [['SERVIÇO', 'HORÁRIO INICIAL', 'HORÁRIO FINAL']],
-        body: table3Data,
-        ...tableStyles3Col
-    });
-    
-    y = doc.lastAutoTable.finalY + 8;
-    
-    doc.setTextColor(0, 82, 163);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('RELATÓRIO DA MÁQUINA', 10, y);
-    y += 6;
-    
-    const relatorio = formData.relatorioMaquina || 'Nenhum relatório preenchido.';
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    
-    const margin = 10;
-    const textWidth = pageWidth - (margin * 2);
-    const lineHeight = 4.5;
-    
-    const lines = doc.splitTextToSize(relatorio, textWidth);
-    const textHeight = lines.length * lineHeight;
-    
-    if (y + textHeight + 30 > pageHeight) {
-        doc.addPage();
-        y = 20;
-        doc.setTextColor(0, 82, 163);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('RELATÓRIO DA MÁQUINA', 10, y);
-        y += 6;
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-    }
-    
-    doc.setFillColor(245, 248, 251);
-    doc.setDrawColor(208, 218, 230);
-    doc.roundedRect(margin - 2, y - 2, textWidth + 4, textHeight + 4, 2, 2, 'FD');
-    
-    doc.text(lines, margin, y + 2);
-    y += textHeight + 10;
-    
-    if (fotos && fotos.length > 0) {
-        if (y + 50 > pageHeight) {
-            doc.addPage();
-            y = 20;
-        }
-        
-        doc.setTextColor(0, 82, 163);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('FOTOS DO SERVIÇO', 10, y);
-        y += 6;
-        
-        const numFotos = fotos.length;
-        let imgWidth, imgHeight, imgsPerRow;
-        
-        if (numFotos === 1) {
-            imgWidth = 80;
-            imgHeight = 60;
-            imgsPerRow = 1;
-        } else if (numFotos === 2) {
-            imgWidth = 65;
-            imgHeight = 50;
-            imgsPerRow = 2;
-        } else if (numFotos === 3) {
-            imgWidth = 50;
-            imgHeight = 40;
-            imgsPerRow = 3;
-        } else if (numFotos <= 4) {
-            imgWidth = 45;
-            imgHeight = 35;
-            imgsPerRow = 4;
-        } else if (numFotos <= 6) {
-            imgWidth = 45;
-            imgHeight = 35;
-            imgsPerRow = 3;
-        } else {
-            imgWidth = 40;
-            imgHeight = 30;
-            imgsPerRow = 4;
-        }
-        
-        const spacing = (pageWidth - 16 - (imgWidth * imgsPerRow)) / (imgsPerRow + 1);
-        let currentX = 8 + spacing;
-        let currentY = y;
-        let photoCount = 0;
-        
-        for (let i = 0; i < numFotos; i++) {
-            if (photoCount > 0 && photoCount % imgsPerRow === 0) {
-                currentY += imgHeight + 6;
-                
-                if (currentY + imgHeight > pageHeight - 15) {
-                    doc.addPage();
-                    currentY = 20;
-                }
-                
-                currentX = 8 + spacing;
-            }
-            
 			try {
-				// 📌 1. Recompressão da imagem ESPECÍFICA PARA PDF
-				const compressedImage = await compressImage(fotos[i].data, 1400, 0.65);
+				const tx = db.transaction(STORE_NAME, 'readwrite');
+				const store = tx.objectStore(STORE_NAME);
 
-				// 📌 2. Adicionar imagem já comprimida
-				doc.addImage(
-					compressedImage,
-					'JPEG',
-					currentX,
-					currentY,
-					imgWidth,
-					imgHeight
-				);
+				// Cursor para iteração sequencial
+				let cursor = await store.openCursor();
+				while (cursor) {
+					// IDs são timestamps (Date.now()), comparamos diretamente
+					if (cursor.key < cutoff) {
+						cursor.delete();	// Remove registros antigos
+					}
+					cursor = await cursor.continue();
+				}
+				await tx.done; // Aguarda commit da transação
+			} catch (e) {
+				// Log amigável para erros de inicialização
+				console.warn("Erro ao tentar limpar registros antigos (pode ser inicialização):", e);
+			}
+		}
+
+		// ======== Persitência local de formulários ========
+		// Salva dados completos do formulário (incluindo mídia) no IndexedDB
+		async function salvarFormularioLocal() {
+			// Validação pré-salvamento
+			if (!validateForm()) return;
+			
+			// Coleta dados do formulário
+			const f = collectFormData(); 
+			
+			// Geração de ID baseado em timestamp
+			const id = Date.now();
+
+			// Gerar pdf antes de salvar
+			console.log('🔄 Gerando PDFs...');
+			
+			// Geração síncrona de PDFs (bloqueante mas necessária)
+			const fichaPDFBase64 = await gerarFichaPDFBase64(
+				f, 
+				state.materiais, 
+				state.fotos, 
+				state.assinaturas
+			);
+			
+			const relatorioPDFBase64 = await gerarRelatorioPDFBase64(
+				f, 
+				state.materiais, 
+				state.fotos, 
+				state.assinaturas
+			);
+			console.log('✅ PDFs gerados');
+			
+			// ======== Estrutura do registro offline ========
+			const registro = {
+				// Metadados
+				id: id,
+				createdAt: new Date().toISOString(),
+			
+				cliente: f.cliente,
+				cidade: f.cidade,
+				equipamento: f.equipamento === 'OUTRO' ? f.equipamentoOutro : f.equipamento,
+				tecnico: f.tecnico,
+				servico: f.servico,
+			
+				dataInicial: f.dataInicial,
+				horaInicial: f.horaInicial,
+				dataFinal: f.dataFinal,
+				horaFinal: f.horaFinal,
+			
+				veiculo: f.veiculo,
+				estoque: f.estoque,
+				numeroSerie: f.numeroSerie,
+			
+				relatorioMaquina: f.relatorioMaquina,
+			
+				fotos: state.fotos,
+				assinaturas: state.assinaturas,
+				clienteNome: f.clienteNome,
+				tecnicoNome: f.tecnicoNome,
+			
+				materiais: state.materiais,
+			
+				sincronizado: false,
+				syncedAt: null,
+				chaveUnica: generateUniqueKey()
+			};
+
+			try {
+				const db = await initDB();
+				
+				// Operação atômica de escrita
+				await db.put(STORE_NAME, registro);
+				
+				// Registra para sincronização em background
+				await registrarBackgroundSync();
+				
+				// Atualiza contador de pendências
+				await updatePendingCount();
+				
+				// Tenta sincronização imediata se online
+				if (navigator.onLine) {
+					setTimeout(() => attemptSync(), 1000);
+				}
+
+				showNotification('Formulário salvo localmente!', 'success');
+				await renderFormulariosSalvos();	// Atualiza UI
+				
+			} catch (e) {
+				console.error("Erro ao salvar:", e);
+				showNotification('Erro ao salvar formulário', 'error');
+			}
+		}
+
+		// ======== Renderização da seção de formulários salvos ========
+		// Cria/atualiza interface com registros offline
+		async function renderFormulariosSalvos() {
+			const containerId = 'formularios-salvos';
+			let container = document.getElementById(containerId);
+			
+			// Criação dinâmica da seção se não existir
+			if (!container) {
+				container = document.createElement('section');
+				container.id = containerId;
+				container.className = 'form-section';
+				
+				// Insere no final do main
+				const main = document.querySelector('main');
+				if (main) {
+					main.appendChild(container);
+				} else {
+					console.error("Elemento 'main' não encontrado. Não é possível renderizar a seção de salvos.");
+					return;
+				}
+			}
+
+			// Template da seção
+			container.innerHTML = `
+				<h2 class="text-xl font-semibold flex items-center">
+					<i class="fas fa-history text-blue-600 mr-2"></i> Formulários Salvos
+					<span class="ml-2 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+						${syncState.pendingCount} pendente(s)
+					</span>
+				</h2>
+				<div id="lista-formularios" class="space-y-2"></div>
+			`;
+
+			const lista = container.querySelector('#lista-formularios');
+
+			try {
+				const db = await initDB();
+
+				// Limpeza de registros expirados
+				await limparRegistrosAntigos(db);
+
+				// Recupera todos os registros
+				let registros = await db.getAll(STORE_NAME);
+				
+				// Ordenação decrescente por ID (mais recente primeiro)
+				registros.sort((a, b) => b.id - a.id); 
+
+				// Estado vazio
+				if (registros.length === 0) {
+					lista.innerHTML = `<p class="text-gray-500 text-sm">Nenhum formulário salvo nas últimas 2 semanas.</p>`;
+					return;
+				}
+
+			// ======== Renderização de itens ========
+			registros.forEach(registro => {
+				// Formatação de data legível
+				const dataLegivel = new Date(registro.id).toLocaleString();
+				
+				// Ícone de status baseado em sincronização
+				const statusIcon = registro.sincronizado 
+					? '<i class="fas fa-check-circle text-green-500" title="Sincronizado"></i>'
+					: '<i class="fas fa-clock text-yellow-500" title="Pendente de sincronização"></i>';
+				
+				const item = document.createElement('div');
+				item.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm';
+				item.innerHTML = `
+					<div class="flex items-center">
+						${statusIcon}
+						<div class="ml-2">
+							<div class="font-medium text-gray-800">${registro.cliente || '—'}</div>
+							<div class="text-sm text-gray-500">${registro.servico || '—'} • ${dataLegivel}</div>
+						</div>
+					</div>
+					<div class="flex space-x-2">
+						<button class="btn-secondary px-3 py-1 rounded edit-btn" data-id="${registro.id}">
+							<i class="fas fa-edit"></i> Editar
+						</button>
+						<button class="btn-secondary px-3 py-1 rounded text-red-600 delete-btn" data-id="${registro.id}">
+							<i class="fas fa-trash"></i>
+						</button>
+
+						${
+							registro.sincronizado && registro.serverId
+							? `
+							<button class="btn-secondary px-3 py-1 rounded text-green-600 share-btn"
+									data-id="${registro.id}"
+									title="Compartilhar no WhatsApp">
+								<i class="fab fa-whatsapp"></i>
+							</button>
+							`
+							: ''
+						}
+					</div>
+				`;
+				lista.appendChild(item);
+			});
+
+			// ======== Delegação de eventos ========
+			// Otimização: único listener no container pai
+				
+			// Evento de edição
+			lista.querySelectorAll('.edit-btn').forEach(btn => {
+				btn.addEventListener('click', e => {
+					const id = e.currentTarget.dataset.id;
+					carregarFormularioLocal(id); 
+				});
+			});
+				
+			// Evento de exclusão
+			lista.querySelectorAll('.delete-btn').forEach(btn => {
+				btn.addEventListener('click', e => {
+					const id = e.currentTarget.dataset.id;
+					removerFormularioLocal(id);
+				});
+			});
+				
+			// Evento de compartilhamento
+			lista.querySelectorAll('.share-btn').forEach(btn => {
+				btn.addEventListener('click', e => {
+					const id = e.currentTarget.dataset.id;
+					compartilharFormulario(id);
+				});
+			});
 
 			} catch (e) {
-				console.error('Erro ao adicionar imagem comprimida:', e);
+				console.error("Erro fatal ao renderizar formulários do IndexedDB:", e);
+				lista.innerHTML = `<p class="text-red-500 text-sm">Erro ao carregar lista de formulários. (Verifique a console.)</p>`;
 			}
-            
-            currentX += imgWidth + spacing;
-            photoCount++;
-        }
-        
-        y = currentY + imgHeight + 8;
-    }
-    
-    if (y + 35 > pageHeight) {
-        doc.addPage();
-        y = 20;
-    }
-    
-    const signatureWidth = 50;
-    const signatureHeight = 25;
-    const spacing = (pageWidth - (signatureWidth * 2)) / 3;
-    
-    if (assinaturas && assinaturas.tecnico) {
-        try {
-            doc.addImage(assinaturas.tecnico, 'PNG', spacing, y, signatureWidth, signatureHeight);
-        } catch (e) {
-            console.error('Erro ao adicionar assinatura do técnico:', e);
-        }
-    }
-    
-    if (assinaturas && assinaturas.cliente) {
-        try {
-            doc.addImage(assinaturas.cliente, 'PNG', spacing * 2 + signatureWidth, y, signatureWidth, signatureHeight);
-        } catch (e) {
-            console.error('Erro ao adicionar assinatura do cliente:', e);
-        }
-    }
-    
-    y += signatureHeight + 2;
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.3);
-    doc.line(spacing, y, spacing + signatureWidth, y);
-    doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
-    
-    doc.setTextColor(0, 0, 0);
-	doc.setFontSize(7);
-	doc.setFont('helvetica', 'normal');
-	doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
-	doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
-    
-    return doc.output('blob');
-}
+		}
 
-// ======== FUNÇÃO AUXILIAR PARA CARREGAR IMAGEM ========
-function carregarImagem(src) {
-    return new Promise(resolve => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = src;
-    });
-}
+		// ======== Carregamento de formulário para edição ========
+		// Restaura estado completo da aplicação a partir do IndexedDB
+		async function carregarFormularioLocal(id) {
+			try {
+				const db = await initDB();
+				
+				// Recuperação por chave primária
+				const registro = await db.get(STORE_NAME, Number(id));
+
+				if (!registro) {
+					showNotification('Registro não encontrado', 'error');
+					return;
+				}
+
+				const f = registro;
+
+				// Usa FIELD_ID_MAP para mapeamento dinâmico
+				for (const key in FIELD_ID_MAP) {
+					const elId = FIELD_ID_MAP[key];
+					const el = document.getElementById(elId);
+					if (!el) continue;
+
+					const val = f[key] !== undefined ? f[key] : '';
+					
+					// Atribuição baseada no tipo do elemento
+					if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+						el.value = val;
+						
+						
+						// Trigger visual para campos condicionais
+						if (elId === 'equipamento') {
+							// Assume-se que 'equipamentoOutro' está definido globalmente
+							equipamentoOutro.classList.toggle('hidden', el.value !== 'OUTRO'); 
+						}
+					}
+				}
+
+				// ======== Restauração de materiais ========
+				// Deep clone para evitar mutações acidentais
+				state.materiais = registro.materiais ? JSON.parse(JSON.stringify(registro.materiais)) : [];
+				renderMateriais(); 
+				
+				// ======== Restauração de fotos ========
+				state.fotos = registro.fotos ? JSON.parse(JSON.stringify(registro.fotos)) : [];
+				renderPhotos(); 
+
+				// ======== Restauração de assinaturas ========
+				state.assinaturas = registro.assinaturas || { cliente: null, tecnico: null };
+
+				// Cliente
+				if (state.assinaturas.cliente) {
+					drawDataUrlOnCanvas(state.assinaturas.cliente, canvasCliente, ctxCliente);
+				} else {
+					ctxCliente.clearRect(0, 0, canvasCliente.width, canvasCliente.height);
+				}
+
+				// Técnico
+				if (state.assinaturas.tecnico) {
+					drawDataUrlOnCanvas(state.assinaturas.tecnico, canvasTecnico, ctxTecnico);
+				} else {
+					ctxTecnico.clearRect(0, 0, canvasTecnico.width, canvasTecnico.height);
+				}
+
+				showNotification('Formulário carregado para edição.', 'info');
+				
+				// Scroll para topo com animação
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+
+			} catch (e) {
+				console.error("Erro ao carregar registro do IndexedDB:", e);
+				showNotification('Erro ao carregar formulário.', 'error');
+			}
+		}
+
+		// ======== Remoção de formulário ========
+		// Exclusão permanente de registro do IndexedDB
+		async function removerFormularioLocal(id) {
+
+			try {
+				const db = await initDB();
+
+				// Operação atômica de deleção
+				await db.delete(STORE_NAME, Number(id));
+
+				showNotification('Formulário excluído.', 'info');
+
+				// Atualiza interface
+				await renderFormulariosSalvos();
+			} catch (e) {
+				console.error("Erro ao remover do IndexedDB:", e);
+				showNotification('Erro ao excluir formulário.', 'error');
+			}
+		}
+
+		// ======== Compartilhamento dos pdf's ========
+		// Usa Web Share API quando disponível, fallback para WhatsApp
+		async function compartilharFormulario(id) {
+			try {
+				const db = await initDB();
+				const form = await db.get(STORE_NAME, Number(id));
+				
+				// Validação de estado de sincronização
+				if (!form || !form.sincronizado || !form.serverId) {
+					showNotification('Formulário não sincronizado', 'error');
+					return;
+				}
+
+				// Geração dos PDFs (já otimizados para compartilhamento)
+				const fichaBlob = await gerarFichaPDFBase64(
+					form,
+					form.materiais,
+					form.fotos,
+					form.assinaturas,
+					form.serverId
+				);
+
+				const relatorioBlob = await gerarRelatorioPDFBase64(
+					form,
+					form.materiais,
+					form.fotos,
+					form.assinaturas,
+					form.serverId
+				);
+
+				// ======== Conversão para file object ========
+				// Requisito da Web Share API
+				const fichaFile = new File(
+					[fichaBlob],
+					`Ficha_${form.serverId}.pdf`,
+					{ type: 'application/pdf' }
+				);
+
+				const relatorioFile = new File(
+					[relatorioBlob],
+					`Relatorio_${form.serverId}.pdf`,
+					{ type: 'application/pdf' }
+				);
+
+				// Compartilhar
+				if (
+					navigator.canShare &&
+					navigator.canShare({ files: [fichaFile, relatorioFile] })
+				) {
+					await navigator.share({
+						title: `Serviço ${form.serverId}`,
+						text: `Relatório de serviço\nID: ${form.serverId}`,
+						files: [fichaFile, relatorioFile]
+					});
+				} else {
+					// Fallback para para whatsapp
+					const msg = encodeURIComponent(
+						`Relatório de serviço\nID: ${form.serverId}`
+					);
+					window.open(`https://wa.me/?text=${msg}`, '_blank');
+				}
+			
+			// Erro de cancelamento do usuário
+			} catch (e) {
+				console.error('Erro ao compartilhar:', e);
+				showNotification('Erro ao compartilhar', 'error');
+			}
+		}
 
 
-// ======== CHAMAR AO EXPORTAR ========
-// Chamar dentro do exportData() (logo depois do download do JSON):
-// gerarPDFsAutomaticamente(formData, state.materiais, state.fotos, state.assinaturas);
+		// ======== Helper: Renderização de assinaturas em canvas ========
+		// Converte Data URL para imagem renderizada no canvas
+		function drawDataUrlOnCanvas(dataUrl, canvas, ctx) {
+			const img = new Image();
+			img.onload = () => {
+				// Limpa canvas existente
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				// Ajuste para dispositivos retina (high DPI)
+				const ratio = window.devicePixelRatio || 1;
+				if (canvas.width !== canvas.clientWidth * ratio) {
+					// Redimensiona canvas real mantendo tamanho visual
+					canvas.width = canvas.clientWidth * ratio;
+					canvas.height = canvas.clientHeight * ratio;
+
+					// Aplica escala para compensar DPI
+					ctx.scale(ratio, ratio);
+
+					// Restaura configurações de desenho
+					ctx.lineWidth = 2;
+					ctx.lineCap = 'round';
+					ctx.lineJoin = 'round';
+					ctx.strokeStyle = '#000';
+				}
+				// Renderiza imagem mantendo proporções
+				ctx.drawImage(img, 0, 0, canvas.clientWidth, canvas.clientHeight);
+			};
+			img.src = dataUrl;
+		}
+
+		// ======== Ponto de inicialização da aplicação ========
+		// Bootstrap principal com tratamento de falhas em cascata
+
+		async function startApp() {
+			try {
+				// Fase 1: Inicialização de persistência offline
+				try {
+					await initDB();	// IndexedDB connection bootstrap
+				} catch (dbError) {
+					console.error('Erro crítico no banco de dados:', dbError);
+					// Recovery strategy: database recreation
+					await recriarBancoDados();
+				}
+				
+				// Fase 2: Configuração de sincronização em background
+				initSync();
+				
+				 // Fase 3: Hidratação da interface com dados persistentes
+				await renderFormulariosSalvos();
+				
+				// Fase 4: Configuração de runtime environment
+				updateOnlineStatus();										// Network state detection
+				window.addEventListener('online', updateOnlineStatus);		// Network event listeners
+				window.addEventListener('offline', updateOnlineStatus);
+				setupEventListeners();										// DOM event bindings
+				setupSignatureCanvas(canvasCliente, ctxCliente, 'cliente');	// Signature pad initialization
+				setupSignatureCanvas(canvasTecnico, ctxTecnico, 'tecnico');
+				populateMaterialsDatalist();								// Autocomplete data population
+
+				// Fase 5: Service Worker registration (PWA capabilities)
+				if ('serviceWorker' in navigator) {
+					window.addEventListener('load', () => {
+						navigator.serviceWorker.register('./sw.js?v=024')
+							.then(reg => {
+								console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
+							})
+							.catch(error => {
+								console.error('Falha no registro do Service Worker:', error);
+							});
+					});
+				}
+				
+			} catch (error) {
+				console.error("Falha ao iniciar a aplicação:", error);
+				showNotification('Erro ao inicializar aplicação. Recarregue a página.', 'error');
+			}
+		}
+
+		// ======== Estratégia de recuperação do banco de dados ========
+		// Mecanismo de fallback para instâncias corrompidas do IndexdDB
+
+		async function recriarBancoDados() {
+			try {
+				console.log('Tentando recriar banco de dados...');
+				// Fecha conexão existente se presente
+				if (dbPromise) {
+					const db = await dbPromise;
+					db.close();
+					dbPromise = null;	// Limpa referência singleton
+				}
+				
+				// Opção nuclear: deleta todo o banco de dados
+				await idb.deleteDB(DB_NAME);
+				console.log('Banco antigo deletado');
+				
+				// Inicialização limpa
+				await initDB();
+				console.log('Novo banco criado com sucesso');
+				
+			} catch (error) {
+				console.error('Falha ao recriar banco de dados:', error);
+				throw error;	// Propaga para o chamador
+			}
+		}
+
+		// ======== Evento bootstrap da aplicação ========
+		// Handler DOMContentLoaded para aprimoramento progressivo
+
+		document.addEventListener('DOMContentLoaded', startApp);
+
+		// ======== Handler do botão de exportação ========
+		// Ação dupla: persistência local + fluxo de exportação
+
+		exportBtn.addEventListener('click', function(e) {
+			// Persistência local imediata
+			salvarFormularioLocal();
+		});
+
+		// ======== Pipeline de geração de pdf ========
+		// Integração jsPDF com mecanismo de retentativa automática
+
+		async function gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas) {
+			// Verificação de dependência com backoff exponencial
+			if (!window.jspdf || !window.jspdf.jsPDF) {
+				console.warn("jsPDF ainda não carregado, adiando geração...");
+				setTimeout(() => gerarPDFsAutomaticamente(formData, materiais, fotos, assinaturas), 500);
+				return;
+			}
+
+			try {
+				// Geração sequencial de PDFs com delay entre documentos
+				await gerarFichaPDFBase64(formData, materiais, fotos, assinaturas);
+				
+				// Throttle entre documentos para evitar bloqueio da UI
+				await new Promise(resolve => setTimeout(resolve, 500));
+				
+				await gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas);
+				
+				showNotification("PDFs baixados com sucesso!", "success");
+			} catch (e) {
+				console.error("Erro ao gerar PDFs:", e);
+				showNotification("Erro ao gerar PDFs", "error");
+			}
+		}
+
+		// ======== Utilitário de formatação de data ========
+		// Conversão ISO 8601 para formato de data localizado
+		function formatDate(dateString) {
+			if (!dateString) return '-';
+			const [year, month, day] = dateString.split('-');
+			return `${day}/${month}/${year}`;
+		}
+
+		// ======== Gerador de pdf da ficha de manutenção ========
+		async function gerarFichaPDFBase64(formData, materiais, fotos, assinaturas, serverId = null) {
+			const { jsPDF } = window.jspdf;
+			
+			// Configuração de PDF com otimização de compressão
+			const doc = new jsPDF({
+				orientation: 'p',
+				unit: 'mm',
+				format: 'a4',
+				compress: true,
+				compression: 'MEDIUM',	// Proporção balanceada tamanho/qualidade
+				putOnlyUsedFonts: true,	// Subsetting de fontes para arquivos menores
+				floatPrecision: 2		// Precisão de coordenadas
+			});
+
+			// Calcula dimensões da página para layout responsivo
+			const pageWidth = doc.internal.pageSize.getWidth();
+			const pageHeight = doc.internal.pageSize.getHeight();
+
+			const logo = await carregarImagem("Logo.png");
+			let y = 20;	// Posição vertical do cursor
+
+			// Seção de cabeçalho com branding
+			doc.setFillColor(0, 82, 163);	// Azul da marca
+			doc.rect(0, 0, pageWidth, 17, 'F');
+
+			// ID do servidor no cabeçalho
+			if (serverId) {
+				doc.setFontSize(9);
+				doc.setTextColor(255, 255, 255);
+				doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
+			}
+			
+			if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
+			
+			doc.setTextColor(255, 255, 255);
+			doc.setFontSize(14);
+			doc.setFont('helvetica', 'bold');
+			doc.text('FICHA DE MANUTENÇÃO', pageWidth / 2, 11, { align: 'center' });
+			y = 22;
+
+			// Configuração de tabela para layout de 4 colunas
+			const tableStyles4Col = {
+				styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
+				headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+				columnStyles: {
+					0: { cellWidth: (pageWidth - 16) / 4 },
+					1: { cellWidth: (pageWidth - 16) / 4 },
+					2: { cellWidth: (pageWidth - 16) / 4 },
+					3: { cellWidth: (pageWidth - 16) / 4 }
+				},
+				margin: { left: 8, right: 8 },
+				theme: 'grid'	// Tema de estilização de tabela
+			};
+			
+			// Tabela de informações do cliente
+			const table1Data = [[
+				formData.cliente || '-',
+				formData.cidade || '-',
+				formData.equipamento || '-',
+				formData.numeroSerie || '-'
+			]];
+			
+			doc.autoTable({
+				startY: y,
+				head: [['CLIENTE', 'CIDADE', 'EQUIPAMENTO', 'Nº SÉRIE']],
+				body: table1Data,
+				...tableStyles4Col
+			});
+			
+			y = doc.lastAutoTable.finalY + 4;
+			
+			// Tabela de informações do técnico
+			const table2Data = [[
+				formData.tecnico || '-',
+				formData.veiculo || '-',
+				formData.estoque || '-',
+				formData.dataInicial ? formatDate(formData.dataInicial) : '-'
+			]];
+			
+			doc.autoTable({
+				startY: y,
+				head: [['TÉCNICO', 'VEÍCULO', 'ESTOQUE', 'DATA']],
+				body: table2Data,
+				...tableStyles4Col
+			});
+			
+			y = doc.lastAutoTable.finalY + 8;
+			
+			// Cabeçalho da seção de materiais
+			doc.setTextColor(0, 82, 163);
+			doc.setFontSize(10);
+			doc.setFont('helvetica', 'bold');
+			doc.text('MATERIAIS UTILIZADOS', 10, y);
+			y += 6;
+			
+			// Preparação dos dados da tabela de materiais
+			const materialsData = [];
+			if (materiais && materiais.length > 0) {
+				materiais.forEach(material => {
+					materialsData.push([
+						material.codigo || '',
+						material.quantidade || '',
+						material.descricao || ''
+					]);
+				});
+			} else {
+				materialsData.push(['', '', 'Nenhum material utilizado.']);
+			}
+			
+			// Tabela de materiais com larguras de coluna variáveis
+			doc.autoTable({
+				startY: y,
+				head: [['CÓDIGO', 'QNTD', 'MATERIAIS']],
+				body: materialsData,
+				styles: { fontSize: 8, cellPadding: 3 },
+				headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+				columnStyles: {
+					0: { cellWidth: 25, halign: 'center' },					// Coluna de código
+					1: { cellWidth: 20, halign: 'center' },					// Coluna de quantidade
+					2: { cellWidth: pageWidth - 16 - 45, halign: 'left' }	// Coluna de descrição
+				},
+				margin: { left: 8, right: 8 },
+				theme: 'grid'
+			});
+			
+			y = doc.lastAutoTable.finalY + 8;
+			
+			// Seção de ordem de serviço
+			doc.setTextColor(0, 82, 163);
+			doc.setFontSize(10);
+			doc.setFont('helvetica', 'bold');
+			doc.text('ORDEM DE SERVIÇO', 10, y);
+			y += 6;
+			
+			const table3Data = [[
+				formData.osComplementar || '',
+				formData.osServico || ''
+			]];
+			
+			doc.autoTable({
+				startY: y,
+				head: [['OS COMPLEMENTAR', 'OS SERVIÇO']],
+				body: table3Data,
+				styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
+				headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+				columnStyles: {
+					0: { cellWidth: (pageWidth - 16) / 2 },
+					1: { cellWidth: (pageWidth - 16) / 2 }
+				},
+				margin: { left: 8, right: 8 },
+				theme: 'grid'
+			});
+			
+			y = doc.lastAutoTable.finalY + 15;
+			
+			// Seção de assinaturas com posicionamento dinâmico
+			const signatureWidth = 50;
+			const signatureHeight = 25;
+			const spacing = (pageWidth - (signatureWidth * 2)) / 3;
+			
+			// Assinatura do técnico
+			if (assinaturas && assinaturas.tecnico) {
+				try {
+					doc.addImage(assinaturas.tecnico, 'PNG', spacing, y, signatureWidth, signatureHeight);
+				} catch (e) {
+					console.error('Erro ao adicionar assinatura do técnico:', e);
+				}
+			}
+			
+			// Assinatura do cliente
+			if (assinaturas && assinaturas.cliente) {
+				try {
+					doc.addImage(assinaturas.cliente, 'PNG', spacing * 2 + signatureWidth, y, signatureWidth, signatureHeight);
+				} catch (e) {
+					console.error('Erro ao adicionar assinatura do cliente:', e);
+				}
+			}
+			
+			// Linhas de assinatura
+			y += signatureHeight + 2;
+			doc.setDrawColor(0, 0, 0);
+			doc.setLineWidth(0.3);
+			doc.line(spacing, y, spacing + signatureWidth, y);
+			doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
+			
+			// Rótulos das assinaturas
+			doc.setTextColor(0, 0, 0);
+			doc.setFontSize(7);
+			doc.setFont('helvetica', 'normal');
+			doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
+			doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
+			
+			return doc.output('blob');	// Retorna como blob binário
+		}
+
+		// ======== Gerador de pdf do relatório de serviço ========
+		async function gerarRelatorioPDFBase64(formData, materiais, fotos, assinaturas, serverId = null) {
+			const { jsPDF } = window.jspdf;
+
+			const doc = new jsPDF({
+				orientation: 'p',
+				unit: 'mm',
+				format: 'a4',
+				compress: true,
+				compression: 'MEDIUM',
+				putOnlyUsedFonts: true,
+				floatPrecision: 2
+			});
+
+			const pageWidth = doc.internal.pageSize.getWidth();
+			const pageHeight = doc.internal.pageSize.getHeight();
+
+			const logo = await carregarImagem("Logo.png");
+			let y = 20;
+
+			doc.setFillColor(0, 82, 163);
+			doc.rect(0, 0, pageWidth, 17, 'F');
+
+			if (serverId) {
+				doc.setFontSize(9);
+				doc.setTextColor(255, 255, 255);
+				doc.text(`ID: ${serverId}`, pageWidth - 10, 6, { align: 'right' });
+			}
+			
+			if (logo) doc.addImage(logo, "PNG", 10, 1.5, 30, 15);
+			
+			doc.setTextColor(255, 255, 255);
+			doc.setFontSize(14);
+			doc.setFont('helvetica', 'bold');
+			doc.text('RELATÓRIO DE PRESTAÇÃO DE SERVIÇO', pageWidth / 2, 11, { align: 'center' });
+			y = 22;
+
+			// Configuração de tabela de 3 colunas para dados do serviço
+			const tableStyles3Col = {
+				styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
+				headStyles: { fillColor: [0, 82, 163], textColor: 255, fontStyle: 'bold', halign: 'center' },
+				columnStyles: {
+					0: { cellWidth: (pageWidth - 16) / 3, halign: 'center' },
+					1: { cellWidth: (pageWidth - 16) / 3, halign: 'center' },
+					2: { cellWidth: (pageWidth - 16) / 3, halign: 'center' }
+				},
+				margin: { left: 8, right: 8 },
+				theme: 'grid'
+			};
+			
+			// Tabela de cliente e equipamento
+			const table1Data = [[
+				formData.cliente || '-',
+				formData.cidade || '-',
+				formData.equipamento || '-'
+			]];
+			
+			doc.autoTable({
+				startY: y,
+				head: [['CLIENTE', 'CIDADE', 'EQUIPAMENTO']],
+				body: table1Data,
+				...tableStyles3Col
+			});
+			
+			y = doc.lastAutoTable.finalY + 4;
+			
+			// Tabela de técnico e datas
+			const table2Data = [[
+				formData.tecnico || '-',
+				formData.dataInicial ? formatDate(formData.dataInicial) : '-',
+				formData.dataFinal ? formatDate(formData.dataFinal) : '-'
+			]];
+			
+			doc.autoTable({
+				startY: y,
+				head: [['TÉCNICO', 'DATA INICIAL', 'DATA FINAL']],
+				body: table2Data,
+				...tableStyles3Col
+			});
+			
+			y = doc.lastAutoTable.finalY + 4;
+			
+			// Tabela de tipo de serviço e horários
+			const table3Data = [[
+				formData.servico || '-',
+				formData.horaInicial || '-',
+				formData.horaFinal || '-'
+			]];
+			
+			doc.autoTable({
+				startY: y,
+				head: [['SERVIÇO', 'HORÁRIO INICIAL', 'HORÁRIO FINAL']],
+				body: table3Data,
+				...tableStyles3Col
+			});
+			
+			y = doc.lastAutoTable.finalY + 8;
+			
+			// Seção de relatório da máquina com quebra de texto
+			doc.setTextColor(0, 82, 163);
+			doc.setFontSize(10);
+			doc.setFont('helvetica', 'bold');
+			doc.text('RELATÓRIO DA MÁQUINA', 10, y);
+			y += 6;
+			
+			const relatorio = formData.relatorioMaquina || 'Nenhum relatório preenchido.';
+			
+			doc.setTextColor(0, 0, 0);
+			doc.setFontSize(9);
+			doc.setFont('helvetica', 'normal');
+			
+			const margin = 10;
+			const textWidth = pageWidth - (margin * 2);
+			const lineHeight = 4.5;
+			
+			// Cálculo de quebra de texto com quebras de linha
+			const lines = doc.splitTextToSize(relatorio, textWidth);
+			const textHeight = lines.length * lineHeight;
+			
+			// Lógica de paginação para texto longo
+			if (y + textHeight + 30 > pageHeight) {
+				doc.addPage();
+				y = 20;
+				doc.setTextColor(0, 82, 163);
+				doc.setFontSize(10);
+				doc.setFont('helvetica', 'bold');
+				doc.text('RELATÓRIO DA MÁQUINA', 10, y);
+				y += 6;
+				doc.setTextColor(0, 0, 0);
+				doc.setFontSize(9);
+				doc.setFont('helvetica', 'normal');
+			}
+			
+			// Estilização do fundo do texto
+			doc.setFillColor(245, 248, 251);
+			doc.setDrawColor(208, 218, 230);
+			doc.roundedRect(margin - 2, y - 2, textWidth + 4, textHeight + 4, 2, 2, 'FD');
+			
+			// Renderiza texto com quebra
+			doc.text(lines, margin, y + 2);
+			y += textHeight + 10;
+			
+			// Seção de galeria de fotos com layout adaptativo
+			if (fotos && fotos.length > 0) {
+				// Verificação de quebra de página
+				if (y + 50 > pageHeight) {
+					doc.addPage();
+					y = 20;
+				}
+				
+				doc.setTextColor(0, 82, 163);
+				doc.setFontSize(10);
+				doc.setFont('helvetica', 'bold');
+				doc.text('FOTOS DO SERVIÇO', 10, y);
+				y += 6;
+				
+				// Cálculo dinâmico de grid de imagens
+				const numFotos = fotos.length;
+				let imgWidth, imgHeight, imgsPerRow;
+				
+				// Dimensionamento responsivo de imagens baseado na contagem
+				if (numFotos === 1) {
+					imgWidth = 80;
+					imgHeight = 60;
+					imgsPerRow = 1;
+				} else if (numFotos === 2) {
+					imgWidth = 65;
+					imgHeight = 50;
+					imgsPerRow = 2;
+				} else if (numFotos === 3) {
+					imgWidth = 50;
+					imgHeight = 40;
+					imgsPerRow = 3;
+				} else if (numFotos <= 4) {
+					imgWidth = 45;
+					imgHeight = 35;
+					imgsPerRow = 4;
+				} else if (numFotos <= 6) {
+					imgWidth = 45;
+					imgHeight = 35;
+					imgsPerRow = 3;
+				} else {
+					imgWidth = 40;
+					imgHeight = 30;
+					imgsPerRow = 4;
+				}
+				
+				// Cálculo de posicionamento do grid
+				const spacing = (pageWidth - 16 - (imgWidth * imgsPerRow)) / (imgsPerRow + 1);
+				let currentX = 8 + spacing;
+				let currentY = y;
+				let photoCount = 0;
+				
+				// Loop de posicionamento de imagens com paginação
+				for (let i = 0; i < numFotos; i++) {
+					if (photoCount > 0 && photoCount % imgsPerRow === 0) {
+						currentY += imgHeight + 6;
+						
+						if (currentY + imgHeight > pageHeight - 15) {
+							doc.addPage();
+							currentY = 20;
+						}
+						
+						currentX = 8 + spacing;
+					}
+					
+					try {
+						// Recompressão de imagem específica para PDF
+						const compressedImage = await compressImage(fotos[i].data, 1400, 0.65);
+
+						// Incorporação de imagem com tratamento de erro
+						doc.addImage(
+							compressedImage,
+							'JPEG',
+							currentX,
+							currentY,
+							imgWidth,
+							imgHeight
+						);
+
+					} catch (e) {
+						console.error('Erro ao adicionar imagem comprimida:', e);
+					}
+					
+					currentX += imgWidth + spacing;
+					photoCount++;
+				}
+				
+				y = currentY + imgHeight + 8;
+			}
+			
+			// Verificação de quebra de página para assinaturas
+			if (y + 35 > pageHeight) {
+				doc.addPage();
+				y = 20;
+			}
+			
+			// Seção de assinaturas (idêntica ao formulário de manutenção)
+			const signatureWidth = 50;
+			const signatureHeight = 25;
+			const spacing = (pageWidth - (signatureWidth * 2)) / 3;
+			
+			if (assinaturas && assinaturas.tecnico) {
+				try {
+					doc.addImage(assinaturas.tecnico, 'PNG', spacing, y, signatureWidth, signatureHeight);
+				} catch (e) {
+					console.error('Erro ao adicionar assinatura do técnico:', e);
+				}
+			}
+			
+			if (assinaturas && assinaturas.cliente) {
+				try {
+					doc.addImage(assinaturas.cliente, 'PNG', spacing * 2 + signatureWidth, y, signatureWidth, signatureHeight);
+				} catch (e) {
+					console.error('Erro ao adicionar assinatura do cliente:', e);
+				}
+			}
+			
+			y += signatureHeight + 2;
+			doc.setDrawColor(0, 0, 0);
+			doc.setLineWidth(0.3);
+			doc.line(spacing, y, spacing + signatureWidth, y);
+			doc.line(spacing * 2 + signatureWidth, y, spacing * 2 + signatureWidth * 2, y);
+			
+			doc.setTextColor(0, 0, 0);
+			doc.setFontSize(7);
+			doc.setFont('helvetica', 'normal');
+			doc.text(formData.tecnicoNome || 'TÉCNICO', spacing + signatureWidth / 2, y + 3, { align: 'center' });
+			doc.text(formData.clienteNome || 'CLIENTE', spacing * 2 + signatureWidth + signatureWidth / 2, y + 3, { align: 'center' });
+			
+			return doc.output('blob');
+		}
+
+		// ======== Função auxiliar para carregar imagem ========
+		// Implementação de Promise wrapper para Image() API com tratamento de CORS
+
+		function carregarImagem(src) {
+			return new Promise(resolve => {
+				const img = new Image();
+				img.crossOrigin = "anonymous";		// Configuração CORS para recursos externos
+				img.onload = () => resolve(img);	// Resolve com objeto Image carregado
+				img.onerror = () => resolve(null);	// Fail-safe: resolve com null em caso de erro
+				img.src = src;						// Inicia carregamento assíncrono
+			});
+		}
 
 
-
+		// ======== Integração no fluxo de exportação ========
+		// gerarPDFsAutomaticamente(formData, state.materiais, state.fotos, state.assinaturas);
 
         function exportData() {
             if (!validateForm()) return;
 
             const formData = collectFormData();
             
+			// Estrutura de serialização com metadados de versão
             const dataToExport = {
                 formData: formData,
                 fotos: state.fotos,
@@ -2207,19 +2431,22 @@ function carregarImagem(src) {
                 exportTimestamp: new Date().toISOString(),
                 version: '1.0'
             };
-            
+
+            // Serialização JSON com formatação para legibilidade
             const dataStr = JSON.stringify(dataToExport, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
+
+            // Criação de URL de objeto para download
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
             
-            // Nome do arquivo com data e cliente
-            const cliente = formData.cliente.replace(/[^a-zA-Z0-9]/g, '_');
+            // Geração de nome de arquivo normalizado
+            const cliente = formData.cliente.replace(/[^a-zA-Z0-9]/g, '_');	// Sanitização para nomes de arquivo
             const data = new Date().toISOString().split('T')[0];
             link.download = `servico_${cliente}_${data}.json`;
-            
+
+            // Trigger de download via DOM manipulation
             document.body.appendChild(link);
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
@@ -2228,256 +2455,281 @@ function carregarImagem(src) {
         }
 
         function showNotification(message, type) {
+			// Aplicação dinâmica de classes CSS baseadas em tipo
             notification.className = `notification ${type}`;
             notificationIcon.className = type === 'success' ? 'fas fa-check-circle' : 
                                        type === 'error' ? 'fas fa-exclamation-circle' : 
                                        'fas fa-info-circle';
             notificationText.textContent = message;
-            
+
+            // Exibição controlada com timeout para auto-dismiss
             notification.style.display = 'flex';
             
             setTimeout(() => {
                 notification.style.display = 'none';
-            }, 5000);
+            }, 5000);	// Auto-dismiss após 5 segundos
         }
 
-		// ======== INICIALIZAÇÃO DA SINCRONIZAÇÃO ========
-function initSync() {
-    // Obter referências aos elementos
-    syncBtn = document.getElementById('sync-btn');
-    syncBadge = document.getElementById('sync-badge');
-    syncIcon = syncBtn.querySelector('i');
-    
-    // Iniciar verificação de sincronização
-    startSyncInterval();
-    
-    // Atualizar contagem inicial
-    updatePendingCount();
-    
-    // Verificar sincronização quando ficar online
-    window.addEventListener('online', handleOnlineStatus);
-    window.addEventListener('offline', handleOfflineStatus);
-}
+		// ======== Inicialização do sistema de integração ========
+		// Bootstrap do módulo de sincronização offline/online
+		function initSync() {
+			// Cache de referências a elementos DOM para performance
+			syncBtn = document.getElementById('sync-btn');
+			syncBadge = document.getElementById('sync-badge');
+			syncIcon = syncBtn.querySelector('i');
+			
+			// Inicialização do polling de sincronização
+			startSyncInterval();
+			
+			// Hidratação inicial do estado da UI
+			updatePendingCount();
+			
+			// Binding de eventos de mudança de estado de rede
+			window.addEventListener('online', handleOnlineStatus);
+			window.addEventListener('offline', handleOfflineStatus);
+		}
 
-// ======== GERENCIAMENTO DO ESTADO ONLINE/OFFLINE ========
-function handleOnlineStatus() {
-    showNotification('Conexão restaurada - Sincronizando...', 'success');
-    startSyncInterval();
-    attemptSync();
-}
+		// ======== Gerenciamento do estado online/offline ========
+		// Handlers para transições de estado online/offline
+		function handleOnlineStatus() {
+			showNotification('Conexão restaurada - Sincronizando...', 'success');
+			startSyncInterval();	// Reinicia polling
+			attemptSync();			// Trigger de sincronização imediata
+		}
 
-function handleOfflineStatus() {
-    showNotification('Sem conexão - Sincronização pausada', 'error');
-    stopSyncInterval();
-    updateSyncButtonState(false);
-}
+		function handleOfflineStatus() {
+			showNotification('Sem conexão - Sincronização pausada', 'error');
+			stopSyncInterval();				// Pausa polling
+			updateSyncButtonState(false);	// Atualiza estado visual do botão
+		}
 
-// ======== CONTROLE DO INTERVALO DE SINCRONIZAÇÃO ========
-function startSyncInterval() {
-    if (!navigator.onLine) return;
-    
-    stopSyncInterval(); // Garantir que não há intervalos duplicados
-    
-    syncState.syncInterval = setInterval(() => {
-        if (navigator.onLine && !syncState.isSyncing) {
-            attemptSync();
-        }
-    }, SYNC_CONFIG.interval);
-}
+		// ======== Controle do intervalo de sincronização ========
+		// Gerenciamento de interval timer para sincronização periódica
+		function startSyncInterval() {
+			if (!navigator.onLine) return;	// Early exit se offline
+			
+			stopSyncInterval(); // Idempotência: garante que não há intervalos duplicados
+			
+			 // Configura polling baseado em SYNC_CONFIG.interval
+			syncState.syncInterval = setInterval(() => {
+				if (navigator.onLine && !syncState.isSyncing) {
+					attemptSync();	// Trigger condicional de sincronização
+				}
+			}, SYNC_CONFIG.interval);
+		}
 
-function stopSyncInterval() {
-    if (syncState.syncInterval) {
-        clearInterval(syncState.syncInterval);
-        syncState.syncInterval = null;
-    }
-}
+		function stopSyncInterval() {
+			if (syncState.syncInterval) {
+				clearInterval(syncState.syncInterval);
+				syncState.syncInterval = null;	// Cleanup de referência
+			}
+		}
 
-// ======== SINCRONIZAÇÃO MANUAL ========
-async function manualSync() {
-    if (!navigator.onLine) {
-        showNotification('Sem conexão para sincronizar', 'error');
-        return;
-    }
-    
-    if (syncState.isSyncing) {
-        showNotification('Sincronização já em andamento', 'info');
-        return;
-    }
-    
-    showNotification('Iniciando sincronização manual...', 'info');
-    await attemptSync(true);
-}
+		// ======== Sincronização manual ========
+		// Trigger explícito de sincronização via ação do usuário
+		async function manualSync() {
+			// Validação de pré-condições
+			if (!navigator.onLine) {
+				showNotification('Sem conexão para sincronizar', 'error');
+				return;
+			}
+			
+			if (syncState.isSyncing) {
+				showNotification('Sincronização já em andamento', 'info');
+				return;
+			}
+			
+			showNotification('Iniciando sincronização manual...', 'info');
+			await attemptSync(true);	// Flag manual para feedback diferenciado
+		}
 
-// ======== SINCRONIZAÇÃO AUTOMÁTICA ========
-async function attemptSync(isManual = false) {
-    if (syncState.isSyncing) return;
-    
-    try {
-        syncState.isSyncing = true;
-        updateSyncButtonState(true);
-        
-        const pendingForms = await getPendingForms();
-        
-        if (pendingForms.length === 0) {
-            if (isManual) {
-                showNotification('Nenhum formulário pendente para sincronizar', 'info');
-            }
-            return;
-        }
-        
-        if (isManual) {
-            showNotification(`Sincronizando ${pendingForms.length} formulário(s)...`, 'info');
-        }
-        
-        let successCount = 0;
-        let errorCount = 0;
-        
-        // Sincronizar cada formulário pendente
-        for (const form of pendingForms) {
-            try {
-                const success = await syncSingleForm(form);
-                if (success) {
-                    successCount++;
-                    
-                    // Marcar como sincronizado no IndexedDB
-                    await markFormAsSynced(form.id);
-                    
-                    // Pequeno delay entre sincronizações
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                } else {
-                    errorCount++;
-                }
-            } catch (error) {
-                console.error(`Erro ao sincronizar formulário ${form.id}:`, error);
-                errorCount++;
-            }
-        }
-        
-        // Atualizar interface
-        await updatePendingCount();
-        await renderFormulariosSalvos();
-        
-        if (isManual || successCount > 0) {
-            const message = successCount > 0 
-                ? `${successCount} formulário(s) sincronizado(s) com sucesso${errorCount > 0 ? `, ${errorCount} falha(s)` : ''}`
-                : 'Falha na sincronização';
-                
-            showNotification(message, successCount > 0 ? 'success' : 'error');
-        }
-        
-    } catch (error) {
-        console.error('Erro geral na sincronização:', error);
-        if (isManual) {
-            showNotification('Erro na sincronização', 'error');
-        }
-    } finally {
-        syncState.isSyncing = false;
-        updateSyncButtonState(false);
-    }
-}
+		// ======== Sincronização automática ========
+		// Engine principal de sincronização com retry logic
+		async function attemptSync(isManual = false) {
+			// Mutex pattern para prevenir concorrência
+			if (syncState.isSyncing) return;
+			
+			try {
+				syncState.isSyncing = true;
+				updateSyncButtonState(true);	// Feedback visual de estado ativo
+				
+				// Recuperação de dados pendentes do IndexedDB
+				const pendingForms = await getPendingForms();
+				
+				if (pendingForms.length === 0) {
+					if (isManual) {
+						showNotification('Nenhum formulário pendente para sincronizar', 'info');
+					}
+					return;
+				}
+				
+				if (isManual) {
+					showNotification(`Sincronizando ${pendingForms.length} formulário(s)...`, 'info');
+				}
+				
+				// Contadores para métricas de sucesso/falha
+				let successCount = 0;
+				let errorCount = 0;
+				
+				// Processamento sequencial com circuit breaker implícito
+				for (const form of pendingForms) {
+					try {
+						const success = await syncSingleForm(form);
+						if (success) {
+							successCount++;
+							
+							// Marcar como sincronizado no IndexedDB
+							await markFormAsSynced(form.id);
+							
+							// Rate limiting entre requisições
+							await new Promise(resolve => setTimeout(resolve, 500));
+						} else {
+							errorCount++;
+						}
+					} catch (error) {
+						console.error(`Erro ao sincronizar formulário ${form.id}:`, error);
+						errorCount++;
+					}
+				}
+				
+				// Atualizar interface
+				await updatePendingCount();
+				await renderFormulariosSalvos();
+				
+				// Feedback contextual baseado no resultado
+				if (isManual || successCount > 0) {
+					const message = successCount > 0 
+						? `${successCount} formulário(s) sincronizado(s) com sucesso${errorCount > 0 ? `, ${errorCount} falha(s)` : ''}`
+						: 'Falha na sincronização';
+						
+					showNotification(message, successCount > 0 ? 'success' : 'error');
+				}
+				
+			} catch (error) {
+				console.error('Erro geral na sincronização:', error);
+				if (isManual) {
+					showNotification('Erro na sincronização', 'error');
+				}
+			} finally {
+				syncState.isSyncing = false;
+				updateSyncButtonState(false);	// Restaura estado normal
+			}
+		}
 
-// ======== SINCRONIZAÇÃO INDIVIDUAL DE FORMULÁRIO ========
-async function syncSingleForm(form) {
-    try {
-        console.log('📤 Enviando formulário:', form.id);
-        
-        // ✅ OS PDFs JÁ ESTÃO SALVOS NO FORMULÁRIO
-		const payload = {
-            json_dados: {
-                id: form.id,
-				fichaPDF: form.fichaPDF,
-                relatorioPDF: form.relatorioPDF,
-                chaveUnica: form.chaveUnica
-            },
-            chave: form.chaveUnica
-        };
-        
-        const payloadSize = JSON.stringify(payload).length;
-        const payloadSizeMB = (payloadSize / 1024 / 1024).toFixed(2);
-        
-        console.log(`📦 Tamanho: ${payloadSizeMB}MB`);
-        
-        if (payloadSize > 50 * 1024 * 1024) {
-            throw new Error(`Payload muito grande: ${payloadSizeMB}MB`);
-        }
-        
-        const response = await fetch(SYNC_CONFIG.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        console.log('✅ Sincronizado:', form.id);
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Erro:', error);
-        return false;
-    }
-}
+		// ======== Sincronização individual de formulário ========
+		// Implementação de requisição HTTP com payload otimizado
+		async function syncSingleForm(form) {
+			try {
+				console.log('📤 Enviando formulário:', form.id);
+				
+				// Estrutura de payload otimizada
+				const payload = {
+					json_dados: {
+						id: form.id,
+						fichaPDF: form.fichaPDF,
+						relatorioPDF: form.relatorioPDF,
+						chaveUnica: form.chaveUnica
+					},
+					chave: form.chaveUnica
+				};
+				
+				// Cálculo e validação de tamanho do payload
+				const payloadSize = JSON.stringify(payload).length;
+				const payloadSizeMB = (payloadSize / 1024 / 1024).toFixed(2);
+				
+				console.log(`📦 Tamanho: ${payloadSizeMB}MB`);
+				
+				if (payloadSize > 50 * 1024 * 1024) {
+					throw new Error(`Payload muito grande: ${payloadSizeMB}MB`);
+				}
+				
+				// Requisição HTTP POST com timeout implícito do fetch
+				const response = await fetch(SYNC_CONFIG.endpoint, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload)
+				});
+				
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}`);
+				}
+				
+				console.log('✅ Sincronizado:', form.id);
+				return true;
+				
+			} catch (error) {
+				console.error('❌ Erro:', error);
+				return false;
+			}
+		}
 
-// ======== FUNÇÕES AUXILIARES DO INDEXEDDB ========
-async function getPendingForms() {
-    try {
-        const db = await initDB();
-        const allForms = await db.getAll(STORE_NAME);
-        
-        // Filtrar formulários não sincronizados e dentro do período de retenção
-        const cutoffTime = Date.now() - SYNC_CONFIG.maxRetention;
-        const pendingForms = allForms.filter(form => 
-            !form.sincronizado && form.id > cutoffTime
-        );
-        
-        return pendingForms;
-    } catch (error) {
-        console.error('Erro ao buscar formulários pendentes:', error);
-        return [];
-    }
-}
+		// ======== Camada de acesso a dados pendentes ========
+		// Queries otimizadas para IndexedDB
+		async function getPendingForms() {
+			try {
+				const db = await initDB();
+				const allForms = await db.getAll(STORE_NAME);
+				
+				// Filtrar formulários não sincronizados e dentro do período de retenção
+				const cutoffTime = Date.now() - SYNC_CONFIG.maxRetention;
+				const pendingForms = allForms.filter(form => 
+					!form.sincronizado && form.id > cutoffTime
+				);
+				
+				return pendingForms;
+			} catch (error) {
+				console.error('Erro ao buscar formulários pendentes:', error);
+				return [];
+			}
+		}
 
-async function markFormAsSynced(formId) {
-    try {
-        const db = await initDB();
-        const form = await db.get(STORE_NAME, formId);
-        
-        if (form) {
-            form.sincronizado = true;
-            form.syncedAt = new Date().toISOString();
-            await db.put(STORE_NAME, form);
-        }
-    } catch (error) {
-        console.error('Erro ao marcar formulário como sincronizado:', error);
-    }
-}
+		// ======== Operação atômica de atualização de estado ========
+		// Transactional update para marcação de sincronização
+		async function markFormAsSynced(formId) {
+			try {
+				const db = await initDB();
+				const form = await db.get(STORE_NAME, formId);
+				
+				if (form) {
+					form.sincronizado = true;
+					form.syncedAt = new Date().toISOString();
+					await db.put(STORE_NAME, form);
+				}
+			} catch (error) {
+				console.error('Erro ao marcar formulário como sincronizado:', error);
+			}
+		}
 
-async function updatePendingCount() {
-    try {
-        const pendingForms = await getPendingForms();
-        syncState.pendingCount = pendingForms.length;
-        updateSyncBadge();
-    } catch (error) {
-        console.error('Erro ao atualizar contagem pendente:', error);
-    }
-}
+		// ======== Atualização de contador de pendências ========
+		// Método para recalcular e atualizar estado da UI
+		async function updatePendingCount() {
+			try {
+				const pendingForms = await getPendingForms();
+				syncState.pendingCount = pendingForms.length;
+				updateSyncBadge();	// Propaga para UI
+			} catch (error) {
+				console.error('Erro ao atualizar contagem pendente:', error);
+			}
+		}
 
-function updateSyncBadge() {
-    if (syncState.pendingCount > 0) {
-        syncBadge.textContent = syncState.pendingCount;
-        syncBadge.classList.remove('hidden');
-    } else {
-        syncBadge.classList.add('hidden');
-    }
-}
+		// ======== Controller de badge visual ========
+		// Manipulação do elemento de notificação de contagem
+		function updateSyncBadge() {
+			if (syncState.pendingCount > 0) {
+				syncBadge.textContent = syncState.pendingCount;
+				syncBadge.classList.remove('hidden');	// Exibe badge
+			} else {
+				syncBadge.classList.add('hidden');		// Oculta badge
+			}
+		}
 
+		// ======== Gerenciamento de estado do botão de sincronização ========
+// Toggle de classes CSS baseado no estado de operação
 function updateSyncButtonState(syncing) {
     if (syncing) {
-        syncIcon.classList.add('fa-spin');
-        syncBtn.disabled = true;
-        syncBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        syncIcon.classList.add('fa-spin');							// Animação de loading
+        syncBtn.disabled = true;									// Prevenção de clique duplo
+        syncBtn.classList.add('opacity-50', 'cursor-not-allowed');	// Feedback visual
     } else {
         syncIcon.classList.remove('fa-spin');
         syncBtn.disabled = false;
