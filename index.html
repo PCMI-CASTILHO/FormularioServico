@@ -1821,7 +1821,7 @@
 				// Fase 5: Service Worker registration (PWA capabilities)
 				if ('serviceWorker' in navigator) {
 					window.addEventListener('load', () => {
-						navigator.serviceWorker.register('./sw.js?v=026')
+						navigator.serviceWorker.register('./sw.js?v=027')
 							.then(reg => {
 								console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
 							})
@@ -2607,8 +2607,20 @@
 				const payload = {
 					json_dados: {
 						id: form.id,
-						fichaPDF: form.fichaPDF,
-						relatorioPDF: form.relatorioPDF,
+						cliente: form.cliente,
+						cidade: form.cidade,
+						equipamento: form.equipamento,
+						tecnico: form.tecnico,
+						servico: form.servico,
+						dataInicial: form.dataInicial,
+						horaInicial: form.horaInicial,
+						dataFinal: form.dataFinal,
+						horaFinal: form.horaFinal,
+						veiculo: form.veiculo,
+						estoque: form.estoque,
+						numeroSerie: form.numeroSerie,
+						relatorioMaquina: form.relatorioMaquina,
+						materiais: form.materiais,
 						chaveUnica: form.chaveUnica
 					},
 					chave: form.chaveUnica
