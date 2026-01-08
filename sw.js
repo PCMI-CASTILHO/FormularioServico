@@ -5,7 +5,7 @@
 importScripts('https://cdn.jsdelivr.net/npm/idb@8/build/umd.js');
 
 // Nomenclatura de cache versionada para controle de atualizações
-const CACHE_NAME = 'formulario-cache-v0050';
+const CACHE_NAME = 'formulario-cache-v0051';
 
 // Assets críticos para instalação mínima (Core Web Vitals)
 const CORE_ASSETS = [
@@ -200,6 +200,7 @@ async function sincronizarPendentes() {
         
             // Persistência do ID gerado pelo servidor (foreign key)
             form.serverId = data.insertId;
+			console.log(`💾 SW: serverId ${data.insertId} salvo para formulário ${form.id}`);
         
             await db.put('formularios', form);
         
