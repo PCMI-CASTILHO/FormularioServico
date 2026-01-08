@@ -43,7 +43,7 @@
 	<!-- Registro do Service Worker para funcionalidades offline -->
 	<script>
 	if ("serviceWorker" in navigator) {
-		navigator.serviceWorker.register("./sw.js");
+		navigator.serviceWorker.register("./.js");
 	}
 	</script>
 
@@ -1548,7 +1548,7 @@
 						</button>
 
 						${
-							registro.sincronizado && registro.serverId
+							registro.sincronizado
 							? `
 							<button class="btn-secondary px-3 py-1 rounded text-green-600 share-btn"
 									data-id="${registro.id}"
@@ -1693,70 +1693,71 @@
 		// ======== Compartilhamento dos pdf's ========
 		// Usa Web Share API quando disponível, fallback para WhatsApp
 		async function compartilharFormulario(id) {
-			try {
-				const db = await initDB();
-				const form = await db.get(STORE_NAME, Number(id));
-				
-				// Validação de estado de sincronização
-				if (!form || !form.sincronizado || !form.serverId) {
-					showNotification('Formulário não sincronizado', 'error');
-					return;
-				}
-
-				// Geração dos PDFs (já otimizados para compartilhamento)
-				const fichaBlob = await gerarFichaPDFBase64(
-					form,
-					form.materiais,
-					form.fotos,
-					form.assinaturas,
-					form.serverId
-				);
-
-				const relatorioBlob = await gerarRelatorioPDFBase64(
-					form,
-					form.materiais,
-					form.fotos,
-					form.assinaturas,
-					form.serverId
-				);
-
-				// ======== Conversão para file object ========
-				// Requisito da Web Share API
-				const fichaFile = new File(
-					[fichaBlob],
-					`Ficha_${form.serverId}.pdf`,
-					{ type: 'application/pdf' }
-				);
-
-				const relatorioFile = new File(
-					[relatorioBlob],
-					`Relatorio_${form.serverId}.pdf`,
-					{ type: 'application/pdf' }
-				);
-
-				// Compartilhar
-				if (
-					navigator.canShare &&
-					navigator.canShare({ files: [fichaFile, relatorioFile] })
-				) {
-					await navigator.share({
-						title: `Serviço ${form.serverId}`,
-						text: `Relatório de serviço\nID: ${form.serverId}`,
-						files: [fichaFile, relatorioFile]
-					});
-				} else {
-					// Fallback para para whatsapp
-					const msg = encodeURIComponent(
-						`Relatório de serviço\nID: ${form.serverId}`
-					);
-					window.open(`https://wa.me/?text=${msg}`, '_blank');
-				}
-			
-			// Erro de cancelamento do usuário
-			} catch (e) {
-				console.error('Erro ao compartilhar:', e);
-				showNotification('Erro ao compartilhar', 'error');
-			}
+		    try {
+		        const db = await initDB();
+		        const form = await db.get(STORE_NAME, Number(id));
+		        
+		        // MUDANÇA 1: Removemos a verificação "!form.serverId"
+		        if (!form || !form.sincronizado) {
+		            showNotification('Formulário não sincronizado', 'error');
+		            return;
+		        }
+		
+		        // MUDANÇA 2: Criamos um ID de exibição (se não tiver ID do servidor, usa o ID local/Timestamp)
+		        const displayId = form.serverId || form.id;
+		
+		        // Passamos o displayId para as funções de PDF
+		        const fichaBlob = await gerarFichaPDFBase64(
+		            form,
+		            form.materiais,
+		            form.fotos,
+		            form.assinaturas,
+		            displayId // Usa o ID de fallback
+		        );
+		
+		        const relatorioBlob = await gerarRelatorioPDFBase64(
+		            form,
+		            form.materiais,
+		            form.fotos,
+		            form.assinaturas,
+		            displayId // Usa o ID de fallback
+		        );
+		
+		        // ======== Conversão para file object ========
+		        const fichaFile = new File(
+		            [fichaBlob],
+		            `Ficha_${displayId}.pdf`, // Nome do arquivo corrigido
+		            { type: 'application/pdf' }
+		        );
+		
+		        const relatorioFile = new File(
+		            [relatorioBlob],
+		            `Relatorio_${displayId}.pdf`, // Nome do arquivo corrigido
+		            { type: 'application/pdf' }
+		        );
+		
+		        // Compartilhar
+		        if (
+		            navigator.canShare &&
+		            navigator.canShare({ files: [fichaFile, relatorioFile] })
+		        ) {
+		            await navigator.share({
+		                title: `Serviço ${displayId}`,
+		                text: `Relatório de serviço\nID: ${displayId}`,
+		                files: [fichaFile, relatorioFile]
+		            });
+		        } else {
+		            // Fallback para whatsapp
+		            const msg = encodeURIComponent(
+		                `Relatório de serviço\nID: ${displayId}`
+		            );
+		            window.open(`https://wa.me/?text=${msg}`, '_blank');
+		        }
+		    
+		    } catch (e) {
+		        console.error('Erro ao compartilhar:', e);
+		        showNotification('Erro ao compartilhar', 'error');
+		    }
 		}
 
 
@@ -1821,7 +1822,7 @@
 				// Fase 5: Service Worker registration (PWA capabilities)
 				if ('serviceWorker' in navigator) {
 					window.addEventListener('load', () => {
-						navigator.serviceWorker.register('./sw.js?v=027')
+						navigator.serviceWorker.register('./sw.js?v=0050')
 							.then(reg => {
 								console.log('Service Worker registrado com sucesso. Scope:', reg.scope);
 							})
